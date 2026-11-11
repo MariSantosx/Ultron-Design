@@ -68,6 +68,22 @@ Quem pede "reduzir movimento" no sistema recebe a versão sem animação (dobras
 - Sem desfoque de fundo (`backdrop-filter`) nos cartões: o fundo 3D muda todo quadro e o desfoque era o item mais caro.
 - Para trocar uma imagem, mantenha o mesmo nome e formato (.webp); para recomprimir o vídeo use `ffmpeg ... -g 1` (todos os quadros-chave).
 
+## Movimento (padrão das animações)
+
+Todas as animações seguem o mesmo padrão, definido em um lugar só:
+
+| O quê | Valor | Onde |
+| --- | --- | --- |
+| Curva padrão | `cubic-bezier(.22,.8,.3,1)` | CSS `--m-ease` / JS `MOTION.ease` |
+| Rápido (hover, cor, borda) | 0,3 s | `--m-fast` |
+| Base (cartões, estados) | 0,5 s | `--m-base` |
+| Lento (luzes e brilhos) | 0,8 s | `--m-slow` |
+| Distância de entrada | 40 px | JS `MOTION.dist` |
+| Cartões ao passar o mouse | sobem 6 px | `--m-lift` |
+| Puxão dos títulos | 420 ms, um título por vez a cada 5 a 7,5 s | JS `MOTION` / `addPull()` |
+
+Para mudar o "jeito" da página inteira, mude esses valores (bloco `<style id="motion">` e constante `MOTION` em `index.html`). A suavização das animações presas à rolagem não depende da taxa de quadros (`MOTION.k`), então ela tem o mesmo ritmo no computador e no celular.
+
 ## Observações
 
 - Cadastros e newsletter são guardados só no navegador (`localStorage`). Para receber de verdade é preciso ligar a um serviço de formulário ou e-mail.
