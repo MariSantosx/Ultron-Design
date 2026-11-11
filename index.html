@@ -1,0 +1,2395 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap">
+<title>Ultron Design | Encontre a referência pela imagem</title>
+<meta name="description" content="Ultron Design é um aplicativo local que reúne suas referências visuais, copys, fontes, elementos e design systems em uma biblioteca visual.">
+<link rel="icon" href="ASSETS/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="ASSETS/img/logo/logo-ultron.png">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<style>
+/* =========================================================
+   ULTRON DESIGN — primeira dobra
+   Tokens, tipografia, botões e movimento vêm do design system
+   em "design-system-ultron.html".
+   ========================================================= */
+@font-face{font-family:PPNeueMontreal;font-weight:200;font-display:swap;src:url("ASSETS/fonts/PPNeueMontreal-Light.woff2") format("woff2")}
+@font-face{font-family:PPNeueMontreal;font-weight:400;font-display:swap;src:url("ASSETS/fonts/PPNeueMontreal-Regular.woff2") format("woff2")}
+@font-face{font-family:PPNeueMontreal;font-weight:600;font-display:swap;src:url("ASSETS/fonts/PPNeueMontreal-SemiBold.woff2") format("woff2")}
+
+:root{
+  /* COLORS — base */
+  --color-bg:#000000;
+  --color-surface:#070707;
+  --color-surface-2:#2F2F2F;
+  --color-surface-3:#3D424E;
+  --color-text:#FFFFFF;
+  --color-text-muted:#9A9A9A;
+  --color-text-subtle:#BDBDBD;
+  --color-light:#E9E9E9;
+  --color-border:rgba(255,255,255,.1);
+
+  /* COLORS — marca */
+  --color-accent:#FF6B00;
+  --color-accent-light:#FFE1CC;
+  --color-highlight:#FFB829;
+  --color-green:#189B81;
+  --color-hover:#D95B00;
+
+  /* TYPOGRAPHY */
+  --font-sans:PPNeueMontreal,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fw-light:200;
+  --fw-regular:400;
+  --fw-semibold:600;
+  --lh-tight:.9;
+  --lh-snug:1.1;
+  --lh-heading:1.2;
+  --lh-body:1.5;
+  --ls-display:-.04em;
+  --ls-label:.025em;
+  --ls-label-wide:.05em;
+
+  /* SPACING — base 8px */
+  --space-1:.375rem;
+  --space-2:.75rem;
+  --space-3:1rem;
+  --space-4:1.5rem;
+  --space-5:2rem;
+  --space-6:3rem;
+  --space-7:4.5rem;
+  --space-8:7.5rem;
+
+  /* RADIUS */
+  --radius-sm:10px;
+  --radius-btn:1.875rem;
+  --radius-card:2rem;
+  --radius-pill:50px;
+  --radius-round:50%;
+
+  /* EFFECTS */
+  --blur-glass:blur(20px);
+  --glass-bg:linear-gradient(0deg,rgba(0,0,0,.5),rgba(0,0,0,.1));
+  --glass-bg-strong:linear-gradient(0deg,rgba(0,0,0,.8),rgba(0,0,0,.9));
+  --shadow-glow:0 0 32px rgba(255,107,0,.45);
+
+  /* MOTION */
+  --ease-out-quart:cubic-bezier(.25,1,.5,1);
+  --ease-out-soft:cubic-bezier(.5,1,.89,1);
+  --ease-out-cubic:cubic-bezier(.215,.61,.355,1);
+  --dur-fast:.3s;
+  --dur-base:.5s;
+  --dur-reveal:1.1s;
+}
+
+/* layout da página (fora dos tokens do design system) */
+:root{--frame:5vw}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;font-size:16px}
+body{background:radial-gradient(ellipse 62% 78% at 50% 40%,#f6a043 0%,#e4781f 20%,#a24a0f 48%,#4a1c06 78%,#1b0a03 100%) fixed,#1b0a03;color:var(--color-text);font-family:var(--font-sans);font-weight:var(--fw-regular);line-height:var(--lh-body);overflow-x:hidden}
+a{color:inherit}
+::selection{background:var(--color-accent);color:#fff}
+.page{position:relative;z-index:1}
+
+/* ---------- Canvas 3D ---------- */
+#webgl{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:0;transition:opacity .8s var(--ease-out-soft);pointer-events:none}
+#webgl.is-visible{opacity:1}
+#fallback{position:absolute;inset:0;width:100%;height:100%;display:none}
+.no-webgl #fallback{display:block}
+
+/* ---------- Loader ---------- */
+.loader{position:fixed;inset:0;z-index:200;background:#000;display:flex;align-items:center;justify-content:center}
+.loader__spinner{width:52px;height:52px}
+.loader__loading{position:absolute;left:24px;bottom:22px;overflow:hidden;font-size:12px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label-wide)}
+.loader__loading span{display:inline-block}
+.loader__dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+/* ---------- Top nav ---------- */
+.topnav{position:fixed;inset:0 0 auto 0;z-index:60;padding:18px calc(var(--frame) + 24px)}
+.topnav__inner{position:relative;display:grid;grid-template-columns:auto 1fr auto;gap:clamp(24px,4vw,64px);align-items:center}
+.topnav__inner>.logo{justify-self:start}
+.topnav__cta{justify-self:end;display:flex;align-items:center;gap:8px}
+.topnav__grid{display:grid;grid-template-columns:repeat(2,5px);gap:3px;place-content:center;width:36px;height:36px;border-radius:8px;background:#140a04}
+.topnav__grid i{width:5px;height:5px;border-radius:1px;background:#fff}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:var(--fw-semibold);font-size:24px;letter-spacing:-.02em;line-height:1}
+.logo img{width:46px;height:46px;flex:none;margin:-8px -2px -8px -4px}
+.logo__text{display:flex;overflow:hidden;padding-bottom:2px}
+.logo__text span{display:inline-block}
+.logo small{font-size:11px;letter-spacing:var(--ls-label-wide);text-transform:uppercase;color:var(--color-text-muted);font-weight:var(--fw-semibold);margin-left:8px;align-self:center;opacity:.85}
+.topnav nav{display:flex;align-items:center;gap:clamp(18px,2.2vw,32px);justify-self:start}
+.nav-link{display:inline-flex;overflow:hidden;height:1.4em;line-height:1.4em;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:rgba(255,255,255,.78);text-decoration:none;transition:color var(--dur-base) var(--ease-out-soft)}
+.nav-link .ch{display:inline-block;white-space:pre}
+.nav-link:hover,.nav-link.is-active{color:var(--color-text)}
+
+/* ---------- Botões ---------- */
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:0;cursor:pointer;background:var(--color-accent);color:#fff;border-radius:var(--radius-btn);padding:1.03rem 1.25rem;font:var(--fw-semibold) 14px/1 var(--font-sans);letter-spacing:var(--ls-label);text-transform:uppercase;text-decoration:none}
+.btn span{position:relative;z-index:2}
+.btn::before{content:"";position:absolute;inset:0;background:var(--color-hover);clip-path:ellipse(120% 180% at 50% 310%);transition:clip-path var(--dur-reveal) var(--ease-out-cubic);z-index:1}
+.btn:hover::before,.btn:focus-visible::before{clip-path:ellipse(120% 180% at 50% 60%)}
+.btn--sm{padding:.55rem .85rem;font-size:12px}
+.btn--ghost{background:transparent;box-shadow:inset 0 0 0 1px rgba(255,255,255,.7)}
+.btn--white{background:#fff;color:#140a04;border-radius:8px;padding:.45rem .45rem .45rem 1.05rem;gap:14px}
+.btn--white::before{background:#ffe3cc}
+.btn--white.btn--sm{padding:.35rem .35rem .35rem .85rem;gap:12px}
+.btn__tile{position:relative;z-index:2;display:grid;place-items:center;width:34px;height:34px;border-radius:6px;background:#140a04;color:#fff;flex:none}
+.btn--sm .btn__tile{width:28px;height:28px}
+.btn__tile svg{width:14px;height:14px}
+.btn--glow{box-shadow:var(--shadow-glow)}
+.btn:focus-visible,.nav-link:focus-visible,.logo:focus-visible{outline:2px solid var(--color-highlight);outline-offset:3px}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;overflow:hidden;padding:120px calc(var(--frame) + 40px) 80px}
+.hero__inner{position:relative;z-index:2;width:100%;max-width:min(40vw,660px);margin-top:-4vh}
+.display{font-size:clamp(38px,4.3vw,76px);line-height:var(--lh-tight);letter-spacing:var(--ls-display);font-weight:var(--fw-regular);margin:22px 0 26px}
+.display span{display:block}
+/* rótulos no mesmo estilo do menu e dos botões do design system: caixa alta, semibold, tracking aberto */
+.eyebrow{display:flex;align-items:center;gap:14px;font-size:12px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label-wide);text-transform:uppercase;color:var(--color-text)}
+.eyebrow::before{content:"";width:28px;height:2px;border-radius:2px;background:var(--color-accent-light);flex:none}
+.lead{font-size:clamp(12px,.92vw,14px);line-height:1.6;color:var(--color-light);font-weight:var(--fw-light);max-width:50ch}
+.hero__meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+/* hero no estilo da referência: etiqueta em caixa, título enorme em caixa alta, texto curto e botão branco */
+.hero .eyebrow{display:inline-flex;padding:7px 16px;border:1px solid rgba(255,255,255,.8);font-size:11px;background:rgba(255,255,255,.06)}
+.hero .eyebrow::before{display:none}
+/* fontes da dobra 1: técnica e angular no título, geométrica e limpa no texto (futurista, mas moderna) */
+.hero{--font-hero:"Chakra Petch","Space Grotesk",PPNeueMontreal,system-ui,sans-serif;--font-hero-text:"Space Grotesk",PPNeueMontreal,system-ui,sans-serif}
+.hero .eyebrow,.hero .btn,.hero__list{font-family:var(--font-hero)}
+.hero .btn{font-family:var(--font-hero);font-weight:600;letter-spacing:.06em}
+.hero .eyebrow{font-weight:600;letter-spacing:.14em}
+.hero__side .steps li{font-family:var(--font-hero)}
+#hero-title{font-family:var(--font-hero);font-size:clamp(30px,4.1vw,76px);line-height:.98;letter-spacing:-.01em;font-weight:700;text-transform:uppercase;margin:20px 0 22px;color:#fff}
+#hero-title>span:nth-child(2){color:#ffd9b8}
+#hero-lead{font-family:var(--font-hero-text);font-weight:400;font-size:clamp(11px,.88vw,13.5px);line-height:1.6;max-width:38ch;color:rgba(255,255,255,.94)}
+.btn .arrow{margin-left:10px;width:14px;height:14px;flex:none}
+
+/* informações laterais, discretas */
+/* coluna lateral: cartão no topo e lista logo abaixo, sempre acima dos ombros do robô */
+.hero__side{position:absolute;z-index:2;right:max(24px,5vw);top:max(96px,17%);width:clamp(170px,15.5vw,236px);display:flex;flex-direction:column;gap:22px}
+.hero__list{position:absolute;z-index:2;right:max(24px,5vw);bottom:clamp(34px,7vh,70px);display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;max-width:min(380px,32vw);list-style:none;font-size:11px;font-weight:var(--fw-semibold);letter-spacing:.01em}
+.hero__list li{display:flex;align-items:center;gap:7px;padding:7px 14px;border:1px solid rgba(255,255,255,.6);border-radius:var(--radius-pill);color:#fff;background:rgba(255,255,255,.07);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hero__list li::before{content:"";width:5px;height:5px;border-radius:50%;background:#fff;flex:none}
+.hero__list li.is-on{background:#fff;color:#140a04}
+.hero__list li.is-on::before{background:var(--color-accent)}
+
+/* cartão de vidro, bem transparente */
+.hero__card{padding:8px 8px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.75);background:linear-gradient(145deg,rgba(255,255,255,.16),rgba(255,255,255,.04));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hero__thumb{position:relative;aspect-ratio:1/1.05;border-radius:10px;overflow:hidden;background:radial-gradient(circle at 50% 38%,#ffb25c 0%,#ee5a08 46%,#4a1604 100%);display:grid;place-items:center}
+.hero__thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.28),rgba(255,255,255,0) 42%)}
+.hero__thumb img{width:56%;height:auto;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
+.hero__card h2{padding:12px 8px 0;font-size:clamp(13px,1vw,16px);line-height:var(--lh-snug);letter-spacing:-.02em;font-weight:var(--fw-semibold);color:var(--color-text)}
+.hero__card p{margin-top:6px;font-size:clamp(11px,.8vw,12px);line-height:1.5;font-weight:var(--fw-light);color:var(--color-light)}
+/* órbita: as quatro etiquetas giram em volta de um centro; a que passa na frente acende */
+.hero__side .steps{position:relative;height:84px;margin-top:6px;list-style:none}
+.hero__side .steps li{position:absolute;left:50%;top:50%;padding:5px 9px;border-radius:var(--radius-pill);border:1px solid rgba(255,255,255,.3);font-size:9.5px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text);background:rgba(40,16,4,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);white-space:nowrap;will-change:transform;transition:background-color .45s var(--ease-out-soft),border-color .45s var(--ease-out-soft),box-shadow .6s var(--ease-out-soft)}
+.hero__side .steps li.is-active{background:var(--color-accent);border-color:transparent;box-shadow:var(--shadow-glow)}
+
+/* split text */
+.split-line{display:block;overflow:hidden;padding-bottom:.06em;margin-bottom:-.06em}
+.split-inner{display:block;transform-origin:0 0}
+.split-ch{display:inline-block;white-space:pre}
+
+/* barra de rolagem invisível (a rolagem continua funcionando) */
+html,body{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+
+/* título: cada letra acompanha o cursor; o bloco reage à direção do scroll */
+.display{transform-origin:0 60%;will-change:transform}
+.display .w{display:inline-block;white-space:nowrap}
+.display .c{display:inline-block;will-change:transform}
+
+/* ---------- Dobra 2: o problema ---------- */
+/* a cena 3D (fixa atrás de tudo) desenha à direita a mão do robô segurando a pasta laranja com os cartões; aqui fica só o texto */
+.problem{position:relative;z-index:1;height:200vh}
+.problem__sticky{position:sticky;top:0;height:100vh;height:100svh;padding:clamp(110px,15vh,150px) calc(var(--frame) + 40px) clamp(40px,7vh,72px);display:flex;align-items:flex-start;overflow:hidden}
+.problem__copy{width:min(44%,560px)}
+.problem__title{font-size:clamp(34px,4.4vw,72px);margin:0 0 28px;max-width:9em}
+.problem__title .accent{color:var(--color-accent-light)}
+.problem__lead{font-size:clamp(14px,1.15vw,18px);max-width:40ch}
+/* mensagem em destaque, abaixo da mão: negrito e um pouco maior que o resto */
+.problem__msg{position:absolute;left:calc(var(--frame) + 40px);top:56%;transform:translateY(-50%);width:min(600px,46vw)}
+.problem__close{text-align:left;font-size:clamp(22px,2.5vw,38px);line-height:1.18;font-weight:var(--fw-semibold);letter-spacing:-.02em;color:var(--color-text)}
+/* detalhe futurista: traço de luz laranja acima da mensagem */
+.problem__close::before{content:"";display:block;width:56px;height:2px;margin:0 0 var(--space-3);background:var(--color-accent);box-shadow:var(--shadow-glow)}
+.problem__close em{font-style:normal;color:var(--color-accent-light)}
+/* indicador de rolagem: linha de luz com um pixel laranja que desce */
+.scroll-cue{position:absolute;left:50%;bottom:clamp(18px,4vh,40px);width:2px;height:56px;background:linear-gradient(180deg,transparent,rgba(255,107,0,.55));opacity:0}
+.scroll-cue i{position:absolute;left:-2px;top:0;width:6px;height:6px;background:var(--color-accent);box-shadow:var(--shadow-glow);animation:cue-drop 2s var(--ease-out-cubic) infinite}
+@keyframes cue-drop{0%{top:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:calc(100% - 6px);opacity:0}}
+@media (max-width:899px){
+  .problem{height:auto}
+  .problem__sticky{position:static;height:auto;min-height:100vh;padding:110px calc(var(--frame) + 16px) 56px;flex-direction:column;align-items:flex-start;gap:48px}
+  .problem__copy{width:auto}
+  .problem__msg{position:relative;left:auto;top:auto;transform:none;width:auto}
+  .scroll-cue{display:none}
+}
+
+/* ---------- Dobra 3: biblioteca de referências ---------- */
+.library{position:relative;z-index:1;height:260vh}
+.library__sticky{position:sticky;top:0;height:100vh;height:100svh;padding:clamp(100px,13vh,128px) 0 clamp(80px,11vh,112px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.library__head{padding:0 calc(var(--frame) + 40px)}
+.library__title{font-size:clamp(30px,3.3vw,54px);margin:0;max-width:15em}
+.library__lead{font-size:clamp(14px,1.15vw,18px);line-height:1.55;max-width:56ch;margin:0 auto;padding:0 calc(var(--frame) + 24px);text-align:center;color:rgba(255,255,255,.92)}
+.library__stage{flex:1;min-height:0}
+@media (max-width:899px){
+  .library{height:auto}
+  .library__sticky{position:static;height:auto;min-height:100vh;padding:110px 0 56px;gap:28px}
+  .library__head{padding:0 calc(var(--frame) + 16px)}
+  .library__stage{flex:none;height:46vh}
+  #l-cue{display:none}
+}
+
+/* cabeçalho ganha o vidro do design system quando a página rola */
+.topnav__bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.55));-webkit-backdrop-filter:var(--blur-glass);backdrop-filter:var(--blur-glass);transform:scaleY(0);transform-origin:top;pointer-events:none}
+
+/* breakpoints do site: 360 / 768 / 1024 / 1366 / 1921 */
+@media (max-width:1023px){
+  :root{--frame:16px}
+  .hero{padding:110px calc(var(--frame) + 16px) 64px;flex-direction:column;align-items:flex-start;justify-content:center}
+  .hero__inner{max-width:none;margin-top:0}
+  .hero__side{position:static;width:auto;max-width:46ch;margin-top:28px}
+  .hero__list{display:none}
+  .topnav{padding:14px calc(var(--frame) + 8px)}
+  .topnav nav .nav-link{display:none}
+}
+@media (max-width:767px){
+  #webgl.is-visible{opacity:.55}
+}
+@media (max-width:640px){
+  .logo small{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.scroll-cue i{animation:none}}
+</style>
+<style id="v3">
+/* ===== DOBRA 1 no estilo da referência: preto, robô enorme e título gigante embaixo ===== */
+:root{--color-bg:#030407}
+body{background:#030407}
+.topnav{padding:20px calc(var(--frame) + 6px)}
+.topnav__bg{background:linear-gradient(180deg,rgba(3,4,7,.85),rgba(3,4,7,0))}
+.topnav__inner{grid-template-columns:auto 1fr auto;gap:clamp(20px,3vw,48px)}
+.topnav nav{justify-self:start}
+.status{display:inline-flex;align-items:center;gap:10px;font:500 11px/1 Inter,system-ui,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#E8E6E1}
+.status i{width:7px;height:7px;border-radius:50%;background:#3be07d;box-shadow:0 0 10px #3be07d}
+.menu{justify-self:end;display:grid;gap:7px;width:44px;padding:8px 0;cursor:pointer}
+.menu i{display:block;height:1.5px;background:#F2F0EA;transition:width .3s var(--ease-out-quart)}
+.menu i:last-child{width:62%;justify-self:end}
+.menu:hover i:last-child{width:100%}
+.hero{padding:0;align-items:flex-end}
+.hero__inner{position:absolute;z-index:2;left:calc(var(--frame) + 6px);bottom:calc(56px + clamp(26px,5vh,48px));width:auto;max-width:none;margin:0}
+.hero .eyebrow{display:flex;align-items:center;gap:16px;padding:0;border:0;border-radius:0;background:none;font:500 11px/1 Inter,system-ui,sans-serif;letter-spacing:.17em;text-transform:uppercase;color:#E8E6E1}
+.hero .eyebrow::before{content:"";display:block;width:34px;height:1px;border-radius:0;background:#E8E6E1;flex:none}
+#hero-title{font-family:Inter,"Helvetica Neue",Arial,sans-serif;font-weight:700;font-size:clamp(38px,6.2vw,118px);line-height:.88;letter-spacing:-.06em;text-transform:none;color:#F2F0EA;margin:20px 0 34px}
+#hero-title>span:nth-child(2){color:#F2F0EA}
+#hero-title>span:nth-child(3){color:transparent;-webkit-text-stroke:1.5px rgba(242,240,234,.9)}
+#hero-lead{font:400 clamp(11px,.92vw,14px)/1.55 Inter,system-ui,sans-serif;color:#BDBAB4;max-width:34ch}
+.hero__meta{margin-top:26px;gap:0}
+.btn--link{background:none;box-shadow:none;border-radius:0;padding:0;gap:16px;color:#F2F0EA;font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.17em;text-transform:uppercase}
+.btn--link::before{display:none}
+.btn--link .line{display:block;width:24px;height:1px;background:#F2F0EA;transition:width .35s var(--ease-out-quart)}
+.btn--link:hover .line{width:48px}
+.btn--link:hover{translate:none}
+.hero__vert{position:absolute;z-index:2;left:calc(var(--frame) * .3);top:50%;translate:0 -50%;writing-mode:vertical-rl;font:500 10px/1 Inter,system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:#E8E6E1}
+.hero__vert b{font-weight:500;color:#FF8A4D;margin-top:.9em}
+.hero__side{display:none}
+/* carrossel transparente com os serviços, na base do hero */
+.marquee{position:absolute;z-index:3;left:0;right:auto;width:min(43vw,640px);-webkit-mask-image:linear-gradient(90deg,#000 78%,transparent);mask-image:linear-gradient(90deg,#000 78%,transparent);bottom:0;height:56px;display:flex;align-items:center;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.075));-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.15);border-bottom:1px solid rgba(255,255,255,.06)}
+.marquee__track{display:flex;align-items:center;gap:44px;width:max-content;padding-left:44px;animation:mq 40s linear infinite}
+.marquee:hover .marquee__track{animation-play-state:paused}
+.marquee span{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#E8E6E1;white-space:nowrap}
+.marquee i{font-style:normal;color:#FF8A4D;font-size:13px}
+@keyframes mq{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.marquee__track{animation:none}}
+@media (max-width:1023px){.hero__vert{display:none}.hero__inner{bottom:40px}}
+</style>
+<style id="v3b">
+/* fonte tecnológica (Orbitron, como na referência HACKER) em toda a dobra 1 */
+.hero,.topnav,.marquee{--tech:Orbitron,Oxanium,system-ui,sans-serif}
+#hero-title{font-family:var(--tech);font-weight:700;font-size:clamp(26px,4.1vw,78px);line-height:1.06;letter-spacing:.01em;text-transform:uppercase;margin:20px 0 30px}
+#hero-title>span:nth-child(3){-webkit-text-stroke:1.2px rgba(242,240,234,.92)}
+.hero .eyebrow,.btn--link,.status,.hero__vert,.marquee span{font-family:var(--tech)}
+.hero .eyebrow{font-size:10px;letter-spacing:.16em}
+#hero-lead{font-family:var(--tech);font-size:clamp(9.5px,.78vw,12px);line-height:1.7;letter-spacing:.03em;max-width:40ch}
+.btn--link{font-size:11px}
+.status{font-size:10px;letter-spacing:.2em}
+.topnav__inner{grid-template-columns:1fr auto 1fr}
+.topnav nav{justify-self:center}
+.marquee{right:0;width:auto;-webkit-mask-image:none;mask-image:none}
+.marquee span{font-size:11px;letter-spacing:.22em}
+.hero__vert{left:auto;right:calc(var(--frame) * .28);top:33%;font-size:7.5px;letter-spacing:.22em}
+</style>
+<style id="v3c">
+/* cores vibrantes e texto lateral menor */
+#hero-title>span:nth-child(2){color:#FF6B00}
+.hero .eyebrow{color:#FF6B00}
+.hero .eyebrow::before{background:#FF6B00}
+.hero__vert{font-size:6.5px;letter-spacing:.18em;right:calc(var(--frame) * .22);top:31%}
+.marquee{background:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:0}
+</style>
+<style id="o2css">
+/* dobra 2: texto à esquerda, dispositivo de vidro (3D) no centro, chamadas à direita; fontes da dobra 1 */
+.o2{--tech:Orbitron,Oxanium,system-ui,sans-serif;position:relative;z-index:1;height:200vh}
+.o2__sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+#hero-eyebrow,#hero-title,#hero-lead,#hero-cta{transform-origin:0 50%}
+.o2__copy{position:absolute;z-index:3;left:calc(var(--frame) + 6px);top:50%;translate:0 -50%;width:min(32vw,480px)}
+.o2__label{display:block;font:500 10px/1.8 var(--tech);letter-spacing:.26em;text-transform:uppercase;color:#A9B5C9;max-width:30ch}
+.o2__title{font:600 clamp(22px,3.3vw,62px)/1.1 var(--tech);letter-spacing:.005em;text-transform:uppercase;margin:22px 0 22px;color:#F2F0EA}
+.o2__title{position:relative;isolation:isolate}
+.o2__title .split-line:last-child .split-inner{color:#FF6B00;text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+.o2__title .split-line:last-child .c{animation:o2lit 4.6s ease-in-out infinite}
+@keyframes o2lit{0%,62%,100%{color:#FF6B00;text-shadow:0 0 0 rgba(255,150,70,0)}78%{color:#FFB070;text-shadow:0 0 14px rgba(255,160,80,.8)}}
+.o2__title::after{content:"";position:absolute;z-index:-1;left:-6%;bottom:-10%;width:78%;height:40%;background:radial-gradient(ellipse at 32% 50%,rgba(255,107,0,.2),transparent 70%);filter:blur(16px);pointer-events:none;animation:o2glow 5.5s ease-in-out infinite}
+@keyframes o2glow{50%{opacity:.5}}
+.o2__title .w{display:inline-block;white-space:nowrap}.o2__title .c{display:inline-block}
+.o2__title.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+.o2__copy .w,.o2__call .w{display:inline-block;white-space:nowrap}.o2__copy .c,.o2__call .c{display:inline-block}
+.o2__call li{transition:background .8s,box-shadow .8s}
+.o2__call li i{transition:box-shadow .8s,transform .8s}
+.o2__call li.lit{background:linear-gradient(90deg,rgba(255,107,0,.15),rgba(3,4,7,.72) 58%);box-shadow:0 0 26px -12px rgba(255,107,0,.5)}
+.o2__call li.lit i{box-shadow:0 0 16px rgba(255,107,0,1);transform:scale(1.3)}
+.o2__call li.lit b{color:#FFD2A8}
+@media (prefers-reduced-motion:reduce){.o2__title::after{animation:none}.o2__title .split-line:last-child .c{animation:none}}
+.o2__sub{font:400 clamp(9.5px,.8vw,12.5px)/1.75 var(--tech);letter-spacing:.03em;color:#BDBAB4;max-width:36ch}
+.o2__cta{margin-top:clamp(22px,4vh,38px)}
+.o2 .btn--link{font-family:var(--tech);font-size:11px}
+.o2 .btn--link em{font-style:normal;color:#FF6B00;margin-left:2px}
+.o2__call{position:absolute;z-index:3;right:calc(var(--frame) + .6vw);top:0;bottom:0;width:min(19vw,300px);list-style:none}
+.o2__call li{position:absolute;left:0;right:0;display:flex;align-items:center;gap:14px}
+.o2__call li{padding:9px 12px 9px 0;border-radius:10px;background:linear-gradient(90deg,transparent,rgba(3,4,7,.72) 35%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.o2__call li:nth-child(1){top:24%}
+.o2__call li:nth-child(2){top:46%}
+.o2__call li:nth-child(3){top:68%}
+.o2__call li::before{content:"";flex:none;width:clamp(16px,2.2vw,40px);height:1px;background:linear-gradient(90deg,transparent,rgba(242,240,234,.5))}
+.o2__call li i{flex:none;width:7px;height:7px;border-radius:50%;background:#FF6B00;box-shadow:0 0 12px rgba(255,107,0,.8)}
+.o2__call b,.o2__call span{text-shadow:0 1px 12px #000,0 0 4px #000}
+.o2__call b{display:block;font:600 clamp(10px,.95vw,14px)/1.3 var(--tech);letter-spacing:.16em;text-transform:uppercase;color:#F2F0EA}
+.o2__call span{display:block;margin-top:5px;font:400 clamp(9px,.85vw,13px)/1.5 var(--tech);letter-spacing:.02em;color:#A9B5C9}
+@media (max-width:1023px){.o2__call{width:auto;left:calc(var(--frame) + 6px);right:calc(var(--frame) + 6px);top:auto;bottom:70px;display:grid;gap:14px}.o2__call li{position:static}.o2__call li::before{width:30px}}
+@media (max-width:899px){
+  .o2__copy{left:calc(var(--frame) + 16px);right:calc(var(--frame) + 16px);top:calc(70px + 1.5svh);translate:none;width:auto}
+  .o2__label{font-size:8.5px;max-width:none}
+  .o2__title{font-size:clamp(20px,6.4vw,32px);margin:10px 0 10px}
+  .o2__sub{font-size:10.5px;line-height:1.6;max-width:none}
+  .o2__cta{margin-top:14px}
+  .o2__call{left:calc(var(--frame) + 12px);right:calc(var(--frame) + 12px);bottom:30px;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .o2__call li{flex-direction:column;align-items:flex-start;gap:7px;padding:10px 8px;background:linear-gradient(180deg,rgba(3,4,7,.72),rgba(3,4,7,.5))}
+  .o2__call li::before{display:none}
+  .o2__call b{font-size:8.2px;letter-spacing:.05em}
+  .o2__call span{font-size:8.5px;line-height:1.45;margin-top:3px}
+  #o2-cue{display:none}
+}
+.o2__sticky::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(90deg,rgba(3,4,7,.9) 0,rgba(3,4,7,.66) 33%,rgba(3,4,7,0) 60%);opacity:var(--scrim,0)}
+.o2__video{position:absolute;z-index:2;left:65%;top:50%;translate:-50% -50%;height:80vh;width:auto;aspect-ratio:16/9;max-width:none;pointer-events:none;opacity:0;filter:url(#o2key);-webkit-mask-image:linear-gradient(180deg,transparent,#000 8%,#000 92%,transparent),linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(180deg,transparent,#000 8%,#000 92%,transparent),linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);mask-composite:intersect}
+@media (max-width:899px){.o2__video{width:134vw;height:auto;top:55%;left:50%}.o2__sticky::before{background:linear-gradient(180deg,rgba(3,4,7,.92) 0,rgba(3,4,7,.78) 38%,rgba(3,4,7,0) 58%,rgba(3,4,7,0) 76%,rgba(3,4,7,.72) 100%)}}
+</style>
+<style id="hdr">
+/* cabeçalho: ao sair da dobra 1, o estado e o menu somem (fica só a logo) */
+.topnav nav,.topnav .menu,.topnav .logo{opacity:var(--hp,1);translate:0 calc((1 - var(--hp,1)) * -16px)}
+.topnav__bg{display:none}
+</style>
+<style id="o3css">
+/* dobra 3: quatro cartões finos com cantos marcados (referência Product Lineup); objetos de vidro 3D atrás de cada um */
+.o3{--tech:Orbitron,Oxanium,system-ui,sans-serif;position:relative;z-index:1;height:260vh}
+.o3__sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(16px,3vh,34px);padding:clamp(60px,9vh,100px) calc(var(--frame) + 6px) clamp(54px,9vh,86px)}
+.o3__tag{display:block;font:500 10px/1 var(--tech);letter-spacing:.3em;text-transform:uppercase;color:#A9B5C9}
+.o3__head{display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(20px,4vw,60px)}
+.o3__title{font:600 clamp(20px,3vw,54px)/1.08 var(--tech);letter-spacing:.005em;text-transform:uppercase;color:#F2F0EA}
+.o3__title .split-line:last-child .split-inner{color:#FF6B00}
+.o3__lead{max-width:34ch;text-align:right;font:400 clamp(8.5px,.72vw,11.5px)/1.75 var(--tech);letter-spacing:.03em;color:#BDBAB4}
+.o3__cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,1.8vw,28px)}
+.o3c{position:relative;aspect-ratio:1/1.22;padding:clamp(16px,1.9vw,30px);border:1px solid rgba(255,255,255,.16);border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.008));transition:transform .45s var(--ease-out-quart),border-color .4s,box-shadow .4s}
+.o3c::before,.o3c::after{content:"";position:absolute;right:clamp(10px,1.1vw,16px);width:11px;height:11px;border-right:1px solid rgba(255,255,255,.7)}
+.o3c::before{top:clamp(10px,1.1vw,16px);border-top:1px solid rgba(255,255,255,.7)}
+.o3c::after{bottom:clamp(10px,1.1vw,16px);border-bottom:1px solid rgba(255,255,255,.7)}
+.o3__head .w,.o3c .w,.o3__tag .w{display:inline-block;white-space:nowrap}.o3__head .c,.o3c .c,.o3__tag .c{display:inline-block}
+.o3__title .split-line:last-child .split-inner{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+.o3__title .split-line:last-child .c{animation:o2lit 4.6s ease-in-out infinite}
+.o3__title.glitching .c,.o3c .c{}
+.o3__title.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+.o3c{transition:transform .45s var(--ease-out-quart),border-color .9s,box-shadow .9s}
+.o3c.lit{border-color:rgba(255,150,80,.5);box-shadow:0 0 34px -12px rgba(255,107,0,.55),inset 0 0 24px -16px rgba(255,107,0,.55)}
+.o3c.lit h3{color:#FFE1C6}
+.o3c:hover{transform:translateY(-6px);border-color:rgba(255,160,100,.55);box-shadow:0 30px 60px -34px rgba(255,107,0,.5)}
+.o3c h3{font:500 clamp(14px,1.75vw,28px)/1.12 var(--tech);letter-spacing:.005em;color:#fff}
+.o3c p{margin-top:8px;font:400 clamp(8.5px,.8vw,12.5px)/1.5 var(--tech);letter-spacing:.02em;color:#A9B5C9}
+.o3c__obj{position:absolute;left:3%;right:3%;top:35%;bottom:15%;pointer-events:none}
+.o3c__go{position:absolute;left:clamp(16px,1.9vw,30px);bottom:clamp(14px,1.7vw,26px);display:grid;place-items:center;width:clamp(34px,3vw,46px);aspect-ratio:1;border:1px solid rgba(255,255,255,.6);border-radius:50%;color:#fff;text-decoration:none;font-size:15px;transition:background .3s,border-color .3s}
+.o3c:hover .o3c__go,.o3c__go:hover{background:#FF6B00;border-color:#FF6B00}
+@media (max-width:1023px){.o3__cards{grid-template-columns:repeat(2,minmax(0,1fr))}.o3__lead{display:none}}
+.o3__cards:not(.is-grid){--cw:clamp(240px,21vw,360px);display:block;position:relative;height:calc(var(--cw)*1.46);touch-action:pan-y}
+.o3__cards:not(.is-grid) .o3c{position:absolute;left:50%;top:50%;width:var(--cw);margin:calc(var(--cw)*-.61) 0 0 calc(var(--cw)*-.5);cursor:pointer;will-change:translate,scale,opacity}
+@media (max-width:899px){
+  .o3__sticky{padding:78px calc(var(--frame) + 14px) 30px;gap:10px}
+  .o3__title{font-size:clamp(19px,5.9vw,30px)}
+  .o3__cards:not(.is-grid){--cw:min(58vw,262px)}
+  .o3c h3{font-size:17px}
+  .o3c p{font-size:10px}
+  #o3-cue{display:none}
+}
+@media (max-width:560px){.o3__cards.is-grid{grid-template-columns:1fr}.o3__cards.is-grid .o3c{aspect-ratio:1.3}}
+@media (prefers-reduced-motion:reduce){.o3c{transition:none}.o3__title .split-line:last-child .c{animation:none}}
+.cursor-glow{mix-blend-mode:screen;position:fixed;left:0;top:0;width:600px;height:600px;margin:-300px 0 0 -300px;z-index:0;pointer-events:none;border-radius:50%;background:radial-gradient(circle,rgba(255,77,45,.1) 0%,rgba(255,120,30,.04) 35%,transparent 68%);will-change:transform;opacity:0;transition:opacity .6s}
+.cursor-glow.on{opacity:1}
+@media (hover:none){.cursor-glow{display:none}}
+</style>
+<style id="o45css">
+/* dobra 4: faixa gigante  |  dobra 5: serviços com visual fixo (estrutura do site de referência, conteúdo da Ultron) */
+.o4,.o5{--tech:Orbitron,Oxanium,system-ui,sans-serif;position:relative;z-index:1}
+.o4{padding:clamp(70px,14vh,150px) 0;overflow:hidden}
+.o4__row{display:block;white-space:nowrap;will-change:transform;font:700 clamp(54px,11vw,190px)/1.08 var(--tech);letter-spacing:-.01em;text-transform:uppercase;color:#F2F0EA}
+.o4__row i{display:inline-block;width:.16em;height:.16em;margin:0 .32em;background:#FF6B00;transform:rotate(45deg) translateY(-.12em);box-shadow:0 0 24px rgba(255,107,0,.7)}
+.o4__row{text-shadow:0 0 22px rgba(255,255,255,.1)}
+.o4__row--ghost{color:transparent;-webkit-text-stroke:1.5px rgba(242,240,234,.4);text-shadow:none}
+.o4__row .c{animation:o4glow 7s ease-in-out infinite}
+.o4__row--ghost .c{animation-name:o4glowG}
+@keyframes o4glow{0%,68%,100%{color:#F2F0EA;text-shadow:0 0 22px rgba(255,255,255,.1)}82%{color:#fff;text-shadow:0 0 20px rgba(255,255,255,.8),0 0 5px rgba(255,255,255,.65)}}
+@keyframes o4glowG{0%,68%,100%{-webkit-text-stroke-color:rgba(242,240,234,.4);text-shadow:none}82%{-webkit-text-stroke-color:rgba(255,255,255,.95);text-shadow:0 0 14px rgba(255,255,255,.35)}}
+@media (prefers-reduced-motion:reduce){.o4__row .c{animation:none}}
+.o5{padding:clamp(60px,12vh,130px) calc(var(--frame) + 6px) clamp(80px,14vh,160px)}
+.o5__head{display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(20px,4vw,60px);margin-bottom:clamp(36px,8vh,90px)}
+.o5__tag{display:block;margin-bottom:18px;font:500 10px/1 var(--tech);letter-spacing:.3em;text-transform:uppercase;color:#FF6B00}
+.o5__title{font:600 clamp(24px,3.6vw,64px)/1.08 var(--tech);text-transform:uppercase;color:#F2F0EA}
+.o5__title em{font-style:normal;color:#FF6B00}
+.o5__lead{max-width:34ch;text-align:right;font:400 clamp(9px,.78vw,12.5px)/1.75 var(--tech);letter-spacing:.03em;color:#BDBAB4}
+.o5__grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,4vw,64px);align-items:start}
+.o5__visual{position:sticky;top:calc(50vh - min(26vh,230px));height:min(52vh,460px);perspective:1400px}
+.o5__panel{position:relative;height:100%;border:1px solid rgba(255,255,255,.13);border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.01));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 40px 80px -40px rgba(255,90,20,.35);overflow:hidden;will-change:transform}
+.o5__panel::before{content:"";position:absolute;inset:-30% -10% auto auto;width:70%;height:70%;background:radial-gradient(circle,rgba(255,90,20,.3),transparent 65%);pointer-events:none}
+.o5__scene{position:absolute;inset:0 0 54px 0;padding:clamp(18px,2.4vw,34px);display:flex;flex-direction:column;justify-content:center;gap:14px;opacity:0;transform:translateY(24px) scale(.96);transition:opacity .55s,transform .7s cubic-bezier(.2,.8,.2,1)}
+.o5__scene.on{opacity:1;transform:none}
+.o5__bar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:14px;padding:0 clamp(18px,2.4vw,34px);height:54px;border-top:1px solid rgba(255,255,255,.09);font:500 11px/1 var(--tech);letter-spacing:.14em;text-transform:uppercase;color:#E6E2DA}
+.o5__bar b{color:#FF6B00;font-weight:600;white-space:nowrap}
+.o5__bar span:not(.o5__dots){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o5__dots{margin-left:auto;display:flex;gap:5px}
+.o5__dots i{width:18px;height:3px;border-radius:2px;background:rgba(255,255,255,.18);transition:background .4s,width .4s}
+.o5__dots i.on{background:#FF6B00;width:34px}
+.o5__cards{display:flex;flex-direction:column;gap:clamp(20px,4vh,40px)}
+.o5c{position:relative;min-height:min(62vh,520px);display:flex;flex-direction:column;justify-content:center;padding:clamp(22px,2.6vw,40px);border:1px solid rgba(255,255,255,.12);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);will-change:transform,opacity;transition:border-color .5s,box-shadow .5s}
+.o5c.on{border-color:rgba(255,140,70,.5);box-shadow:0 30px 70px -40px rgba(255,107,0,.55)}
+.o5c__n{font:600 11px/1 var(--tech);letter-spacing:.24em;color:#FF6B00}
+.o5c h3{margin:14px 0 12px;font:600 clamp(20px,2.4vw,40px)/1.1 var(--tech);text-transform:uppercase;color:#fff}
+.o5c p{max-width:52ch;font:400 clamp(11px,.95vw,15px)/1.7 Inter,system-ui,sans-serif;color:#C9C5BD}
+.o5c ul{list-style:none;margin:22px 0 26px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:16px 26px}
+.o5c li{position:relative;padding-left:22px;font:400 clamp(10px,.82vw,13px)/1.55 Inter,system-ui,sans-serif;color:#A9A59E}
+.o5c li b{display:block;margin-bottom:3px;font:600 clamp(10px,.86vw,13px)/1.3 var(--tech);letter-spacing:.03em;color:#F2F0EA}
+.o5c li::before{content:"✓";position:absolute;left:0;top:1px;font-size:12px;color:#FF6B00}
+.o5c a{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:13px 20px;border:1px solid rgba(255,107,0,.7);border-radius:999px;font:500 11px/1 var(--tech);letter-spacing:.14em;text-transform:uppercase;color:#fff;text-decoration:none;transition:background .3s,translate .3s}
+.o5c a:hover{background:#FF6B00;translate:0 -2px}
+/* cenas do visual fixo */
+.o5__scene--img{padding:clamp(8px,1vw,14px)!important;justify-content:center}
+.sc-img{display:block;width:100%;height:100%;object-fit:contain;border-radius:14px}
+.sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sc-tile{aspect-ratio:1/1.1;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#ff6b00,#5a1d03 70%,#12090a)}
+.sc-tile:nth-child(2n){background:linear-gradient(200deg,#ffb347,#a24a0f 45%,#16090a)}
+.sc-tile:nth-child(3n){background:linear-gradient(160deg,#3a3a42,#0e0e12 70%,#ff6b00 160%)}
+.sc-line{height:9px;border-radius:5px;background:rgba(255,255,255,.14)}
+.sc-line.s{width:55%}.sc-line.m{width:78%}.sc-line.o{background:rgba(255,107,0,.7)}
+.sc-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.03)}
+.sc-row i{flex:none;width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#ff8a3d,#8a2f05)}
+.sc-row .sc-line{flex:1}
+.sc-row em{font:500 9px/1 var(--tech);font-style:normal;letter-spacing:.12em;color:#FF6B00;text-transform:uppercase}
+.sc-folder{width:46%;aspect-ratio:1.35;margin:0 auto 6px;border-radius:12px;border:1px solid rgba(255,160,100,.5);background:linear-gradient(160deg,rgba(255,107,0,.5),rgba(40,16,6,.8));box-shadow:0 0 40px rgba(255,90,20,.35);position:relative}
+.sc-folder::before{content:"";position:absolute;left:8%;top:-12%;width:38%;height:16%;border-radius:8px 8px 0 0;background:rgba(255,140,60,.7)}
+.sc-search{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid rgba(255,107,0,.6);border-radius:999px;background:rgba(0,0,0,.35);font:400 12px/1 Inter,sans-serif;color:#C9C5BD}
+.sc-search i{width:30px;height:22px;border-radius:5px;background:linear-gradient(135deg,#ff6b00,#4a1a05)}
+.sc-sw{display:flex;gap:8px}.sc-sw i{flex:1;aspect-ratio:1;border-radius:10px;border:1px solid rgba(255,255,255,.12)}
+.sc-type{font:700 clamp(40px,6vw,84px)/1 var(--tech);color:#F2F0EA;letter-spacing:-.02em}.sc-type em{color:#FF6B00;font-style:normal}
+.sc-btns{display:flex;gap:10px}.sc-btns b{padding:11px 18px;border-radius:999px;font:600 10px/1 var(--tech);letter-spacing:.12em;text-transform:uppercase}
+.sc-btns b:first-child{background:#FF6B00;color:#fff}.sc-btns b:last-child{border:1px solid rgba(255,255,255,.35);color:#fff}
+@media (max-width:899px){
+  .o5__grid{display:flex;flex-direction:column;align-items:stretch;gap:16px}
+  .o5__visual{position:sticky;top:70px;z-index:6;height:min(36svh,290px);order:-1;perspective:900px}
+  .o5__panel{background:#070910;border-radius:18px}
+  .o5__scene{inset:0 0 42px 0;padding:12px;gap:8px}
+  .o5__bar{height:42px;font-size:9px;gap:8px}
+  .o5c{min-height:min(46svh,360px);padding:22px 20px}
+  .o5c ul{grid-template-columns:1fr}
+  .o5__head{flex-direction:column;align-items:flex-start}
+  .o5__lead{text-align:left}
+}
+@media (prefers-reduced-motion:reduce){.o5__scene{transition:none}}
+</style>
+<style id="o67css">
+/* dobra 6: como funciona (rolagem vertical vira horizontal, cards giram em 3D)  |  dobra 7: números */
+.o6,.o7{--tech:Orbitron,Oxanium,system-ui,sans-serif;position:relative;z-index:1}
+.o6__sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(24px,5vh,56px)}
+.o6__head{padding:0 calc(var(--frame) + 6px);display:flex;align-items:flex-end;justify-content:space-between;gap:30px}
+.o6__tag,.o7__tag{display:block;margin-bottom:16px;font:500 10px/1 var(--tech);letter-spacing:.3em;text-transform:uppercase;color:#FF6B00}
+.o6__title,.o7__title{font:600 clamp(22px,3.2vw,56px)/1.08 var(--tech);text-transform:uppercase;color:#F2F0EA}
+.o6__title em,.o7__title em{font-style:normal;color:#FF6B00}
+.o6__track{display:flex;gap:clamp(18px,2.4vw,36px);padding:0 14vw 0 calc(var(--frame) + 6px);will-change:transform;transform-style:preserve-3d}
+.o6c{flex:none;width:min(36vw,500px);min-height:min(50vh,430px);display:flex;flex-direction:column;padding:clamp(22px,2.4vw,36px);border:1px solid rgba(255,255,255,.13);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.012));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);will-change:transform,opacity;transform-origin:0 50%}
+.o6c__step{font:500 10px/1 var(--tech);letter-spacing:.26em;text-transform:uppercase;color:#FF6B00}
+.o6c__n{margin:14px 0 6px;font:700 clamp(54px,6.4vw,104px)/1 var(--tech);color:transparent;-webkit-text-stroke:1.2px rgba(242,240,234,.4)}
+.o6c h3{margin:0 0 12px;font:600 clamp(16px,1.7vw,26px)/1.15 var(--tech);text-transform:uppercase;color:#fff}
+.o6c p{font:400 clamp(11px,.92vw,14.5px)/1.7 Inter,system-ui,sans-serif;color:#C9C5BD}
+.o6c ul{list-style:none;margin:auto 0 0;padding:22px 0 0;display:grid;gap:9px}
+.o6c li{position:relative;padding-left:20px;font:400 clamp(10px,.82vw,13px)/1.5 Inter,system-ui,sans-serif;color:#A9A59E}
+.o6c li::before{content:"✓";position:absolute;left:0;color:#FF6B00;font-size:12px}
+.o6__title .w,.o6c .w,.o6__tag .w{display:inline-block;white-space:nowrap}.o6__title .c,.o6c .c,.o6__tag .c{display:inline-block}
+.o6__title em{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+.o6__title em .c{animation:o2lit 4.6s ease-in-out infinite}
+.o6__title.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+.o6c{transition:border-color .8s,box-shadow .8s,background .8s}
+.o6c.lit{border-color:rgba(255,150,80,.55);box-shadow:0 0 36px -12px rgba(255,107,0,.55),inset 0 0 26px -16px rgba(255,107,0,.5);background:linear-gradient(180deg,rgba(255,107,0,.09),rgba(255,255,255,.012))}
+.o6c.lit h3{color:#FFE1C6}
+.o6c.lit .o6c__n{-webkit-text-stroke-color:rgba(255,150,80,.9)}
+.o7__title .w,.o7c__k .w,.o7__tag .w{display:inline-block;white-space:nowrap}.o7__title .c,.o7c__k .c,.o7__tag .c{display:inline-block}
+.o7__title em{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+.o7__title em .c{animation:o2lit 4.6s ease-in-out infinite}
+.o7__title.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+.o6__prog{margin:0 calc(var(--frame) + 6px);height:2px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden}
+.o6__prog i{display:block;height:100%;background:linear-gradient(90deg,#FF6B00,#FFB347);transform-origin:0 50%;transform:scaleX(0)}
+.o7{padding:clamp(70px,14vh,150px) calc(var(--frame) + 6px) clamp(80px,14vh,160px)}
+.o7__head{display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(20px,4vw,60px);margin-bottom:clamp(34px,7vh,80px)}
+.o7__lead{max-width:34ch;text-align:right;font:400 clamp(9px,.78vw,12.5px)/1.75 var(--tech);letter-spacing:.03em;color:#BDBAB4}
+.o7__grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;grid-template-rows:auto auto;gap:clamp(14px,1.8vw,26px)}
+.o7c{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:10px;min-height:clamp(180px,26vh,260px);padding:clamp(20px,2.2vw,34px);border:1px solid rgba(255,255,255,.12);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);overflow:hidden}
+.o7c--big{grid-row:span 2}
+.o7c__k{font:500 9.5px/1 var(--tech);letter-spacing:.24em;text-transform:uppercase;color:#FF6B00}
+.o7c__v{font:700 clamp(44px,6vw,110px)/1 var(--tech);color:#F2F0EA;letter-spacing:-.02em}
+.o7c__v small{font-size:.45em;margin-left:.1em;color:#FF6B00}
+.o7c p{max-width:30ch;font:400 clamp(10px,.86vw,13.5px)/1.6 Inter,system-ui,sans-serif;color:#A9A59E}
+.o7__bars{display:flex;align-items:flex-end;gap:7px;flex:1;min-height:110px;padding-top:8px}
+.o7__bars i{flex:1;height:100%;border-radius:5px 5px 0 0;background:linear-gradient(180deg,#FF6B00,rgba(255,107,0,.25));transform-origin:50% 100%;transform:scaleY(0)}
+.o7__ring{position:absolute;right:-8%;top:-14%;width:60%;aspect-ratio:1;border-radius:50%;border:1px solid rgba(255,107,0,.35);box-shadow:0 0 60px rgba(255,90,20,.2) inset;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.o6__title em .c,.o7__title em .c{animation:none}}
+@media (max-width:1023px){.o6__head,.o7__head{flex-direction:column;align-items:flex-start}.o7__lead{text-align:left}.o7__grid{grid-template-columns:1fr}.o7c--big{grid-row:auto}}
+@media (max-width:899px){.o6__sticky{gap:16px}.o6__head{gap:8px}.o6__title{font-size:clamp(19px,5.8vw,30px)}.o6__tag{margin-bottom:10px}.o6c{width:min(76vw,330px);min-height:min(54svh,400px);padding:20px 18px}.o6c__n{font-size:54px}.o6__track{padding:0 14vw 0 calc(var(--frame) + 14px)}}
+@media (prefers-reduced-motion:reduce){.o6__sticky{position:static;height:auto;overflow:visible;padding:80px 0}.o6__track{flex-direction:column;padding:0 calc(var(--frame) + 6px);transform:none!important}.o6c{width:auto;min-height:0}.o6__prog{display:none}}
+</style>
+<style id="o811css">
+/* dobras 8 a 11: busca por imagem, planos, novidades, chamada final + rodapé */
+.o8,.o9,.o10,.o11{--tech:Orbitron,Oxanium,system-ui,sans-serif;position:relative;z-index:1;padding:clamp(70px,13vh,140px) calc(var(--frame) + 6px)}
+.tg{display:block;margin-bottom:16px;font:500 10px/1 var(--tech);letter-spacing:.3em;text-transform:uppercase;color:#FF6B00}
+.tt{font:600 clamp(22px,3.2vw,56px)/1.08 var(--tech);text-transform:uppercase;color:#F2F0EA}
+.tt em{font-style:normal;color:#FF6B00}
+.ld{max-width:36ch;font:400 clamp(9.5px,.84vw,13.5px)/1.75 Inter,system-ui,sans-serif;color:#BDBAB4}
+.hd{display:flex;align-items:flex-end;justify-content:space-between;gap:clamp(20px,4vw,60px);margin-bottom:clamp(34px,7vh,76px)}
+.hd .ld{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:12px;padding:14px 22px;border-radius:999px;font:600 11px/1 var(--tech);letter-spacing:.14em;text-transform:uppercase;text-decoration:none;color:#fff;transition:translate .3s,background .3s,box-shadow .3s}
+.pill--fill{background:linear-gradient(135deg,#FF6B00,#E0420A);box-shadow:0 14px 40px -14px rgba(255,90,20,.7)}
+.pill--line{border:1px solid rgba(255,255,255,.35)}
+.pill:hover{translate:0 -3px}.pill--line:hover{background:rgba(255,255,255,.08)}
+/* 8 · busca por imagem */
+.o8__grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(24px,5vw,80px);align-items:center}
+.o8__checks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px 0 32px;padding:0;list-style:none}
+.o8__checks li{padding:14px 16px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.03);font:500 clamp(10px,.82vw,13px)/1.3 var(--tech);color:#E6E2DA}
+.o8__checks li::before{content:"✓";margin-right:10px;color:#FF6B00}
+.o8__win{position:relative;border:1px solid rgba(255,255,255,.14);border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 50px 100px -50px rgba(255,90,20,.4);padding:0 0 clamp(54px,5vw,66px);overflow:hidden;will-change:transform}
+.o8__top{display:flex;align-items:center;gap:7px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.09);font:400 10px/1 var(--tech);letter-spacing:.12em;color:#8E8A84}
+.o8__top i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}.o8__top span{margin-left:auto}
+.o8__q{display:flex;align-items:center;gap:14px;margin:clamp(16px,2vw,26px);padding:12px 16px;border:1px solid rgba(255,107,0,.55);border-radius:999px;background:rgba(0,0,0,.3);font:400 12px/1 Inter,sans-serif;color:#D8D4CC}
+.o8__q i{flex:none;width:34px;height:26px;border-radius:6px;background:linear-gradient(135deg,#ff6b00,#4a1a05)}
+.o8__res{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 clamp(16px,2vw,26px)}
+.o8__res b{position:relative;aspect-ratio:1/1.05;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(135deg,#ff6b00,#5a1d03 70%,#12090a);overflow:hidden}
+.o8__res b:nth-child(2n){background:linear-gradient(200deg,#ffb347,#a24a0f 45%,#16090a)}
+.o8__res b:nth-child(3n){background:linear-gradient(160deg,#3a3a42,#0e0e12 70%,#ff6b00 170%)}
+.o8__res b::after{content:attr(data-s);position:absolute;left:8px;bottom:8px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.6);font:600 9px/1 var(--tech);letter-spacing:.1em;color:#FFB347}
+.o8__win--img{border:0;background:none;box-shadow:0 50px 100px -50px rgba(255,90,20,.45);padding:0;border-radius:24px;backdrop-filter:none;-webkit-backdrop-filter:none}
+.o8__img{display:block;width:100%;height:auto;border-radius:24px}
+#o8 .tt{font-size:clamp(20px,2.65vw,48px)}
+#o8 .tt .w,#o8 .tg .w,#o8 .o8__checks .w{display:inline-block;white-space:nowrap}#o8 .tt .c,#o8 .tg .c,#o8 .o8__checks .c{display:inline-block}
+#o8 .tt em{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+#o8 .tt em .c{animation:o2lit 4.6s ease-in-out infinite}
+#o8 .tt.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+@media (prefers-reduced-motion:reduce){#o8 .tt em .c{animation:none}}
+.o8__scan{position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,#FF6B00,transparent);box-shadow:0 0 22px 4px rgba(255,107,0,.6);opacity:0}
+.o8__badge{position:absolute;right:clamp(14px,2vw,26px);bottom:14px;padding:11px 18px;border-radius:999px;background:linear-gradient(135deg,#FF6B00,#E0420A);font:600 10px/1 var(--tech);letter-spacing:.12em;text-transform:uppercase;color:#fff;box-shadow:0 12px 30px -10px rgba(255,90,20,.8)}
+/* 9 · planos */
+.o9__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px);align-items:stretch}
+.pl{display:flex;flex-direction:column;padding:clamp(24px,2.6vw,40px);border:1px solid rgba(255,255,255,.12);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:border-color .4s,box-shadow .4s,translate .4s}
+.pl:hover{translate:0 -6px;border-color:rgba(255,140,70,.5)}
+.pl--hot{border-color:rgba(255,120,40,.6);background:linear-gradient(180deg,rgba(255,107,0,.14),rgba(255,255,255,.015));box-shadow:0 40px 90px -50px rgba(255,90,20,.7)}
+.pl__k{font:500 10px/1 var(--tech);letter-spacing:.26em;text-transform:uppercase;color:#FF6B00}
+.pl__p{margin:18px 0 6px;font:700 clamp(32px,3.6vw,60px)/1 var(--tech);color:#fff}.pl__p small{font-size:.32em;color:#A9A59E;font-weight:500;letter-spacing:.06em}
+.pl p{font:400 clamp(10px,.86vw,13.5px)/1.6 Inter,sans-serif;color:#A9A59E}
+.pl ul{list-style:none;margin:24px 0 28px;padding:0;display:grid;gap:11px}
+.pl li{position:relative;padding-left:22px;font:400 clamp(10.5px,.88vw,14px)/1.5 Inter,sans-serif;color:#D8D4CC}
+.pl li::before{content:"✓";position:absolute;left:0;color:#FF6B00}
+.pl .pill{margin-top:auto;justify-content:center}
+/* 10 · novidades */
+.o10__grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,2vw,28px)}
+.pt{display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.12);border-radius:20px;background:rgba(255,255,255,.03);overflow:hidden;text-decoration:none;color:inherit;transition:translate .4s,border-color .4s}
+.pt:hover{translate:0 -6px;border-color:rgba(255,140,70,.5)}
+.pt__img{aspect-ratio:16/10;background:linear-gradient(135deg,#ff6b00,#4a1a05 75%);position:relative;transition:filter .4s}
+.pt:nth-child(2) .pt__img{background:linear-gradient(200deg,#ffb347,#7a2a05 55%,#12090a)}
+.pt:nth-child(3) .pt__img{background:linear-gradient(160deg,#454552,#0e0e12 65%,#ff6b00 180%)}
+.pt__img::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 30%,rgba(255,255,255,.25),transparent 40%)}
+.pt__b{display:flex;flex-direction:column;gap:12px;padding:clamp(18px,1.8vw,26px)}
+.pt__m{font:500 9.5px/1 var(--tech);letter-spacing:.2em;text-transform:uppercase;color:#FF6B00}
+.pt h3{font:600 clamp(15px,1.45vw,22px)/1.25 var(--tech);color:#fff}
+.pt span.d{font:400 12px/1 Inter,sans-serif;color:#8E8A84}
+/* 11 · chamada final e rodapé */
+.o11{padding-bottom:clamp(30px,5vh,50px)}
+.o11__cta{position:relative;text-align:left;margin-bottom:clamp(50px,9vh,100px)}
+.o11__big{font:700 clamp(38px,8.4vw,150px)/1.02 var(--tech);letter-spacing:-.02em;text-transform:uppercase;color:#F2F0EA}
+.o11__big em{font-style:normal;color:#FF6B00}
+.o11__row{display:flex;align-items:center;gap:clamp(20px,3vw,44px);margin-top:30px;flex-wrap:wrap}
+.o11__mail{font:500 clamp(12px,1.2vw,18px)/1 var(--tech);letter-spacing:.06em;color:#E6E2DA}
+.o11__seal{position:absolute;right:0;top:0;width:clamp(100px,12vw,190px);aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,#FF6B00,#C93A06);box-shadow:0 20px 60px -20px rgba(255,90,20,.8)}
+.o11__seal svg{position:absolute;inset:0;width:100%;height:100%;animation:sealSpin 18s linear infinite}
+.o11__seal text{font:600 10.5px var(--tech);letter-spacing:.26em;fill:#fff;text-transform:uppercase}
+.o11__seal b{position:absolute;inset:0;display:grid;place-items:center;font:700 clamp(22px,2.6vw,40px)/1 var(--tech);color:#fff}
+@keyframes sealSpin{to{transform:rotate(360deg)}}
+.ft{display:grid;grid-template-columns:1.3fr 1fr 1fr 1.2fr;gap:clamp(24px,3vw,48px);padding:clamp(26px,3vw,46px);border:1px solid rgba(255,255,255,.12);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.ft h4{margin-bottom:18px;font:500 10px/1 var(--tech);letter-spacing:.28em;text-transform:uppercase;color:#FF6B00}
+.ft a{display:block;margin-bottom:12px;font:400 13px/1.4 Inter,sans-serif;color:#C9C5BD;text-decoration:none;transition:color .3s,translate .3s}
+.ft a:hover{color:#fff;translate:4px 0}
+.ft__brand img{width:54px;height:54px;object-fit:contain}
+.ft__brand p{margin:16px 0 0;max-width:30ch;font:400 13px/1.7 Inter,sans-serif;color:#A9A59E}
+.ft__news{display:flex;margin-top:6px;border:1px solid rgba(255,255,255,.2);border-radius:999px;overflow:hidden}
+.ft__news input{flex:1;min-width:0;padding:13px 18px;background:transparent;border:0;outline:0;font:400 13px Inter,sans-serif;color:#fff}
+.ft__news button{padding:0 20px;border:0;background:#FF6B00;color:#fff;font-size:16px;cursor:pointer}
+.ft__bot{display:flex;align-items:center;justify-content:space-between;margin-top:26px;font:400 11px/1 Inter,sans-serif;color:#7E7A74}
+.ft__top{display:inline-grid;place-items:center;width:44px;height:44px;border:1px solid rgba(255,255,255,.3);border-radius:50%;color:#fff;background:transparent;cursor:pointer;font-size:16px;transition:background .3s}
+.ft__top:hover{background:#FF6B00;border-color:#FF6B00}
+.o9 .hd .tt .w,.o9 .hd .tg .w,.o9 .pl__k .w{display:inline-block;white-space:nowrap}.o9 .hd .tt .c,.o9 .hd .tg .c,.o9 .pl__k .c{display:inline-block}
+.o9 .hd .tt em{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+.o9 .hd .tt em .c{animation:o2lit 4.6s ease-in-out infinite}
+.o9 .hd .tt.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+.o9 .pl{will-change:transform;position:relative}
+@media (prefers-reduced-motion:reduce){.o9 .hd .tt em .c{animation:none}}
+@media (max-width:1023px){.o8__grid,.o9__grid,.o10__grid{grid-template-columns:1fr}.hd{flex-direction:column;align-items:flex-start}.hd .ld{text-align:left}.ft{grid-template-columns:1fr 1fr}.o11__seal{position:relative;margin-bottom:24px}}
+@media (max-width:560px){.ft{grid-template-columns:1fr}.o8__checks{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.o11__seal svg{animation:none}}
+</style>
+<style id="heroref">
+/* dobra 1 no formato do site de referência: cabeçalho com pílula de navegação, título grande com destaque, botões, números e cartões de vidro (fontes da Ultron mantidas) */
+:root{--accent:#FF6B00;--accent-2:#FF9A2E}
+.topnav{padding:22px calc(var(--frame) + 6px)}
+.topnav__inner{grid-template-columns:1fr auto 1fr}
+.topnav nav{justify-self:center;display:flex;align-items:center;gap:4px;padding:5px;border-radius:999px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.topnav nav a{padding:11px clamp(12px,1.3vw,22px);border-radius:999px;font:500 11.5px/1 var(--tech);letter-spacing:.05em;color:#E6E2DA;text-decoration:none;white-space:nowrap;transition:color .3s,background .3s}
+.topnav nav a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.topnav nav a.is-on{background:rgba(255,255,255,.09);color:var(--accent)}
+.topnav .menu{justify-self:end;display:inline-flex;align-items:center;gap:14px;width:auto;padding:6px 6px 6px 22px;border-radius:999px;border:1px solid rgba(255,107,0,.55);background:rgba(255,107,0,.08);font:600 11.5px/1 var(--tech);letter-spacing:.06em;color:#fff;text-decoration:none;transition:background .3s}
+.topnav .menu:hover{background:rgba(255,107,0,.2)}
+.topnav .menu b{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--accent);font-size:15px;font-weight:600}
+@media (max-width:960px){.topnav nav{display:none}.topnav__inner{grid-template-columns:1fr auto}}
+/* hero */
+.hero{align-items:center}
+.hero__inner{top:calc(50% - 2vh);bottom:auto;translate:0 -50%;max-width:min(47vw,760px)}
+.hero .eyebrow{color:var(--accent);font:500 clamp(9.5px,.8vw,12px)/1 var(--tech);letter-spacing:.24em}
+.hero .eyebrow::before{background:var(--accent);width:30px}
+#hero-title{font-family:var(--tech);font-weight:700;font-size:clamp(28px,4.1vw,82px);line-height:1.04;letter-spacing:-.005em;text-transform:uppercase;color:#F2F0EA;margin:clamp(14px,2.4vh,26px) 0 clamp(14px,2.6vh,28px)}
+#hero-title>span:nth-child(2){color:#F2F0EA}
+#hero-title>span:nth-child(3){color:#F2F0EA;-webkit-text-stroke:0}
+#hero-title em,#hero-title .hl{font-style:normal;color:var(--accent)}
+#hero-title .hl.glitching .c{text-shadow:1px 0 rgba(0,229,255,.4),-1px 0 rgba(255,45,85,.4)}
+
+#hero-lead{font:400 clamp(11px,1vw,16px)/1.7 Inter,system-ui,sans-serif;letter-spacing:0;color:#CFCBC4;max-width:46ch}
+.hero__meta{display:flex;gap:clamp(10px,1.2vw,18px);margin-top:clamp(18px,3.4vh,34px)}
+.hero__meta .pill{padding:clamp(14px,1.7vh,20px) clamp(22px,2.3vw,38px);font-size:clamp(10px,.82vw,13px)}
+.hero__stats{display:grid;grid-template-columns:repeat(4,auto);justify-content:start;gap:clamp(20px,3vw,52px);margin-top:clamp(22px,5vh,52px)}
+.hero__stats b{display:block;font:600 clamp(20px,2.5vw,46px)/1 var(--tech);color:var(--accent);letter-spacing:-.01em}
+.hero__stats span{display:block;margin-top:8px;font:400 clamp(9px,.78vw,13px)/1.35 Inter,system-ui,sans-serif;color:#A9A59E;max-width:16ch}
+.hero__arc,.hero__arc2{position:absolute;z-index:1;border-radius:50%;pointer-events:none}
+.hero__arc{right:9%;top:6%;width:min(40vw,72vh);aspect-ratio:1;border:2px solid transparent;border-left-color:var(--accent);border-top-color:rgba(255,107,0,.35);transform:rotate(-24deg);filter:drop-shadow(0 0 12px rgba(255,90,20,.55))}
+.hero__arc2{right:3%;top:-6%;width:min(54vw,92vh);aspect-ratio:1;border:1px solid transparent;border-left-color:rgba(255,255,255,.18);border-bottom-color:rgba(255,107,0,.18);transform:rotate(18deg)}
+.hero__sig{position:absolute;z-index:2;right:calc(var(--frame) + 6px);top:clamp(96px,19vh,190px);text-align:right;font-family:var(--tech);color:#fff;pointer-events:none}
+.hero__sig b{display:block;font:500 clamp(22px,2.6vw,46px)/1 var(--tech);letter-spacing:.06em;-webkit-text-stroke:0}
+.hero__sig span{display:block;margin-top:14px;font:500 clamp(8px,.66vw,11px)/1.9 var(--tech);letter-spacing:.34em;text-transform:uppercase;color:#E6E2DA}
+.hero__badge{position:absolute;z-index:2;right:clamp(30px,6vw,120px);top:58%;display:flex;align-items:center;gap:14px;padding:clamp(12px,1.4vw,20px) clamp(16px,1.8vw,26px);border-radius:16px;border:1px solid rgba(255,140,70,.3);background:rgba(40,14,4,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font:600 clamp(11px,.95vw,15px)/1.25 var(--tech);color:#fff;animation:heroFloat 6s ease-in-out infinite}
+.hero__badge i{display:flex;align-items:flex-end;gap:3px;height:20px}
+.hero__badge i s{display:block;width:3px;border-radius:2px;background:var(--accent);text-decoration:none}
+.hero__badge i s:nth-child(1){height:9px}.hero__badge i s:nth-child(2){height:20px}.hero__badge i s:nth-child(3){height:14px}
+.hero .hero__list{display:none!important;flex-direction:column;flex-wrap:nowrap;align-items:flex-start;gap:12px;right:clamp(16px,3.4vw,70px);bottom:clamp(76px,14vh,150px);width:clamp(150px,14vw,230px);max-width:none;padding:clamp(16px,1.6vw,24px) clamp(18px,1.8vw,28px);border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(30,12,4,.5);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);font:400 clamp(10px,.82vw,13.5px)/1 Inter,system-ui,sans-serif;animation:heroFloat 7s ease-in-out -2s infinite}
+.hero .hero__list::after{content:"";position:absolute;right:-5px;bottom:-5px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+.hero .hero__list li{display:block;padding:0;border:0;border-radius:0;background:none;color:#D8D4CC;-webkit-backdrop-filter:none;backdrop-filter:none}
+.hero .hero__list li::before{display:none}
+.hero .hero__list li:first-child{display:none}
+.hero .hero__list li.is-on{background:none;color:#D8D4CC}
+@keyframes heroFloat{50%{transform:translateY(-7px)}}
+@media (max-width:899px){.hero__stats{grid-template-columns:repeat(2,auto)}.hero__arc,.hero__arc2,.hero__sig,.hero__badge,.hero .hero__list{display:none}.hero__inner{top:auto;bottom:calc(56px + 4vh);translate:none;max-width:none}}
+@media (prefers-reduced-motion:reduce){.hero__badge,.hero .hero__list{animation:none}}
+</style>
+<style id="cursorcss">
+/* cursor próprio: bolinha transparente com borda laranja e uma fitinha de luz que a segue */
+@media (hover:hover) and (pointer:fine){
+  html.has-cursor,html.has-cursor *{cursor:none!important}
+}
+.cur-ring{position:fixed;left:0;top:0;z-index:100000;width:38px;height:38px;margin:-19px 0 0 -19px;border:1.6px solid #FF6B00;border-radius:50%;background:transparent;box-shadow:0 0 12px rgba(255,107,0,.55),inset 0 0 8px rgba(255,107,0,.25);pointer-events:none;opacity:0;transition:opacity .3s,width .25s,height .25s,margin .25s,border-color .25s;will-change:transform}
+.cur-ring.on{opacity:1}
+.cur-ring.is-link{width:64px;height:64px;margin:-32px 0 0 -32px;border-color:#FFB020}
+.cur-ring.is-down{width:28px;height:28px;margin:-14px 0 0 -14px}
+.cur-trail{position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:99999;pointer-events:none}
+@media (hover:none),(pointer:coarse){.cur-ring,.cur-trail{display:none}}
+</style>
+<style id="actcss">
+/* janela modal, aviso, artigos e cabeçalho sempre visível */
+.topnav__bg{display:block}
+.pt__img img{display:block;width:100%;height:100%;object-fit:cover}
+.pt__img:has(img)::after{background:radial-gradient(circle at 70% 25%,rgba(255,255,255,.1),transparent 45%)}
+.pt--more{display:none}
+.o10__grid.expanded .pt--more{display:flex}
+html.lenis-stopped{overflow:hidden}
+#o10 .hd .tt .w,#o10 .hd .tg .w,#o10 .pt__m .w,#o10 .pt h3 .w{display:inline-block;white-space:nowrap}#o10 .hd .tt .c,#o10 .hd .tg .c,#o10 .pt__m .c,#o10 .pt h3 .c{display:inline-block}
+#o10 .hd .tt em{text-shadow:0 0 20px rgba(255,107,0,.5),0 0 4px rgba(255,150,70,.4)}
+#o10 .hd .tt em .c{animation:o2lit 4.6s ease-in-out infinite}
+#o10 .hd .tt.glitching .c{text-shadow:1px 0 rgba(0,229,255,.35),-1px 0 rgba(255,45,85,.35)}
+#o11 .o11__big .w,#o11 .o11__big .c{display:inline-block}
+a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padding-bottom:4px;transition:color .3s,border-color .3s}a.o11__mail:hover{color:#FF9A4D;border-color:#FF9A4D}
+.md{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;padding:18px;background:rgba(2,3,6,.74);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s}
+.md.on{opacity:1;visibility:visible}
+.md__box{position:relative;width:min(580px,94vw);max-height:90vh;overflow:auto;padding:clamp(24px,3vw,40px);border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(180deg,rgba(32,20,13,.97),rgba(10,8,8,.985));box-shadow:0 50px 120px -30px rgba(255,90,20,.4);transform:translateY(20px) scale(.97);transition:transform .45s cubic-bezier(.2,.8,.2,1);color:#E6E2DA;font-family:Inter,system-ui,sans-serif}
+.md.on .md__box{transform:none}
+.md__x{position:absolute;right:16px;top:14px;width:38px;height:38px;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:transparent;color:#fff;font-size:22px;line-height:1;cursor:pointer;transition:background .3s,border-color .3s}
+.md__x:hover{background:#FF6B00;border-color:#FF6B00}
+.md h3{margin:0 40px 12px 0;font:600 clamp(18px,2vw,26px)/1.2 Orbitron,system-ui,sans-serif;text-transform:uppercase;color:#fff}
+.md .md__k{display:block;margin-bottom:12px;font:500 10px/1 Orbitron,system-ui,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:#FF6B00}
+.md p{margin:0 0 14px;font-size:14px;line-height:1.7;color:#C9C5BD}
+.md ul{list-style:none;margin:16px 0 22px;padding:0;display:grid;gap:10px}
+.md li{position:relative;padding-left:22px;font-size:13px;line-height:1.55;color:#A9A59E}
+.md li::before{content:"✓";position:absolute;left:0;color:#FF6B00}
+.md li b{display:block;color:#F2F0EA;font:600 13px/1.3 Orbitron,system-ui,sans-serif;margin-bottom:3px}
+.md img.md__img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:14px;margin:0 0 18px}
+.md label{display:block;margin:0 0 14px;font:500 11px/1 Orbitron,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#A9A59E}
+.md input,.md select{display:block;width:100%;margin-top:9px;padding:14px 16px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.04);color:#fff;font:400 14px Inter,sans-serif;outline:0;transition:border-color .3s,box-shadow .3s}
+.md select option{background:#14100d}
+.md input:focus,.md select:focus{border-color:#FF6B00;box-shadow:0 0 0 3px rgba(255,107,0,.18)}
+.md .err{min-height:18px;margin:-4px 0 12px;font-size:12px;color:#FF8A5C}
+.md .pill{border:0;cursor:pointer}
+.md .md__ok{display:grid;place-items:center;width:64px;height:64px;margin-bottom:16px;border-radius:50%;background:linear-gradient(135deg,#FF6B00,#E0420A);font-size:30px;color:#fff;box-shadow:0 14px 40px -12px rgba(255,90,20,.8)}
+.toast{position:fixed;left:50%;bottom:28px;z-index:9500;max-width:min(92vw,460px);padding:14px 22px;border:1px solid rgba(255,140,70,.5);border-radius:999px;background:rgba(18,12,9,.94);color:#fff;font:500 13px/1.4 Inter,sans-serif;box-shadow:0 20px 60px -20px rgba(255,90,20,.6);transform:translate(-50%,24px);opacity:0;visibility:hidden;transition:opacity .35s,transform .45s cubic-bezier(.2,.8,.2,1),visibility .35s}
+.toast.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){#o10 .hd .tt em .c{animation:none}.md,.md__box,.toast{transition:none}}
+</style>
+<style id="mobilehero">
+
+/* celular: robô em cima, texto embaixo (nada de texto por cima do robô) */
+@media (max-width:899px){
+  .hero{display:block;min-height:100svh;padding:min(54svh,480px) calc(var(--frame) + 16px) 92px;align-items:initial}
+  .hero__inner{position:relative;left:auto;top:auto;bottom:auto;translate:none;margin:0;width:auto;max-width:none;padding:0}
+  #hero-title{font-size:clamp(27px,8.4vw,42px);margin:14px 0 14px}
+  #hero-lead{font-size:clamp(12px,3.5vw,15px);max-width:none}
+  .hero__meta{margin-top:18px}
+  .hero__meta .pill{flex:1 1 auto;justify-content:center;padding:15px 18px;font-size:11px}
+  .hero__stats{margin-top:26px;gap:18px 28px}
+  .hero__stats b{font-size:clamp(24px,7vw,34px)}
+  .topnav .menu{padding:5px 5px 5px 15px;gap:10px;font-size:10.5px;letter-spacing:.03em}
+  .topnav .menu b{width:30px;height:30px;font-size:13px}
+  .topnav .logo small{display:none}
+  .hero__vert{display:none}
+  .marquee{width:100%;-webkit-mask-image:linear-gradient(90deg,#000 80%,transparent);mask-image:linear-gradient(90deg,#000 80%,transparent)}
+}
+</style>
+<style id="flow">
+/* página contínua: sem faixas vazias entre as dobras (o próximo item já aparece logo depois do anterior) */
+.o4{padding:clamp(10px,2.5vh,28px) 0}
+.o5,.o7{padding-top:clamp(20px,4vh,48px);padding-bottom:clamp(20px,4vh,48px)}
+.o5__head,.o7__head,.hd{margin-bottom:clamp(18px,3.5vh,40px)}
+.o8,.o9,.o10,.o11{padding-top:clamp(24px,4.5vh,52px);padding-bottom:clamp(24px,4.5vh,52px)}
+.o11{padding-bottom:clamp(24px,4vh,44px)}
+.o11__cta{margin-bottom:clamp(30px,5vh,56px)}
+.o3,.o6{margin-top:-6vh;margin-bottom:-6vh}
+</style>
+<style id="mobilenav">
+/* menu do celular: botão com dois traços abre uma tela com os links */
+.burger,.mnav{display:none}
+@media (max-width:960px){
+  .topnav__inner{grid-template-columns:1fr auto auto;gap:8px}
+  .burger{display:grid;place-content:center;gap:5px;width:40px;height:40px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.06);cursor:pointer;opacity:var(--hp,1)}
+  .burger i{display:block;width:16px;height:1.5px;background:#fff;transition:translate .35s,rotate .35s}
+  .is-menu .burger i:nth-child(1){translate:0 3.25px;rotate:45deg}
+  .is-menu .burger i:nth-child(2){translate:0 -3.25px;rotate:-45deg}
+  .mnav{display:flex;position:fixed;inset:0;z-index:59;flex-direction:column;justify-content:center;padding:84px calc(var(--frame) + 22px) 40px;background:rgba(3,4,7,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+  .is-menu .mnav{opacity:1;visibility:visible;transition:opacity .35s}
+  .mnav nav{display:flex;flex-direction:column}
+  .mnav a{display:flex;align-items:center;justify-content:space-between;padding:17px 2px;border-bottom:1px solid rgba(255,255,255,.09);font:600 clamp(20px,6.4vw,30px)/1 Orbitron,Oxanium,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.02em;color:#F2F0EA;text-decoration:none;opacity:0;translate:0 16px;transition:opacity .5s,translate .6s cubic-bezier(.2,.8,.2,1),color .3s;transition-delay:calc(var(--i)*.05s + .08s)}
+  .mnav a::after{content:"→";font-size:.7em;color:#FF6B00}
+  .mnav a.is-on{color:#FF6B00}
+  .is-menu .mnav a{opacity:1;translate:0 0}
+  .is-menu .topnav__bg{transform:scaleY(1)}
+}
+</style>
+</head>
+<body>
+
+<!-- Loader: quatro quadrados girando até a cena carregar -->
+<div class="loader" id="loader" aria-hidden="true">
+  <svg class="loader__spinner" viewBox="0 0 52 52" fill="#fff"><rect x="23" y="4" width="6" height="6"/><rect x="42" y="23" width="6" height="6"/><rect x="23" y="42" width="6" height="6"/><rect x="4" y="23" width="6" height="6"/></svg>
+  <div class="loader__loading"><span>CARREGANDO<span class="loader__dots"></span></span></div>
+</div>
+
+<canvas id="webgl" aria-hidden="true"></canvas>
+<div class="cursor-glow" id="cursor-glow" aria-hidden="true"></div><div class="cur-ring" id="cur-ring" aria-hidden="true"></div>
+
+<header class="topnav" id="topnav">
+  <div class="topnav__bg"></div>
+  <div class="topnav__inner">
+    <a class="logo" href="#top" aria-label="Ultron Design">
+      <img src="ASSETS/img/logo/logo-ultron.png" alt="" width="256" height="256">
+      <span class="logo__text" aria-hidden="true"><span>U</span><span>l</span><span>t</span><span>r</span><span>o</span><span>n</span></span>
+      <small>Design</small>
+    </a>
+    <nav aria-label="Principal"><a class="is-on" href="#top">Início</a><a href="#o5">Recursos</a><a href="#o6">Como funciona</a><a href="#o9">Planos</a><a href="#o10">Novidades</a><a href="#o11">Contato</a></nav>
+    <a class="menu" href="#comecar"><span>Começar agora</span><b aria-hidden="true">→</b></a>
+    <button class="burger" id="burger" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i></button>
+  </div>
+</header>
+<div class="mnav" id="mnav" aria-hidden="true"><nav aria-label="Menu"><a style="--i:0" class="is-on" href="#top">Início</a><a style="--i:1" href="#o5">Recursos</a><a style="--i:2" href="#o6">Como funciona</a><a style="--i:3" href="#o9">Planos</a><a style="--i:4" href="#o10">Novidades</a><a style="--i:5" href="#o11">Contato</a></nav></div>
+
+<div class="page">
+  <section class="hero" id="top">
+    <canvas id="fallback" aria-hidden="true"></canvas>
+    <div class="hero__inner">
+      <span class="eyebrow" id="hero-eyebrow">Aplicativo para organizar e criar sites</span>
+      <h1 class="display" id="hero-title"><span>Encontre a</span><span>referência</span><span>pela <em>imagem.</em></span></h1>
+      <p class="lead" id="hero-lead">Transforme em design system. Um app local que reúne suas referências, fontes e elementos em uma biblioteca visual.</p>
+      <div class="hero__meta" id="hero-cta">
+        <a class="pill pill--fill" href="#comecar">Começar agora <span aria-hidden="true">→</span></a>
+        <a class="pill pill--line" href="#o6">Ver como funciona <span aria-hidden="true">▶</span></a>
+      </div>
+      <div class="hero__stats" id="hero-stats">
+        <div><b data-to="12" data-suf="k+">12k+</b><span>Referências organizadas</span></div>
+        <div><b data-to="98" data-suf="%">98%</b><span>Catalogados sozinhos</span></div>
+        <div><b data-to="3" data-suf="x">3x</b><span>Mais rápido para achar</span></div>
+        <div><b data-to="4" data-suf="">4</b><span>Passos até o design system</span></div>
+      </div>
+    </div>
+        <div class="marquee" aria-label="Serviços da biblioteca"><div class="marquee__track">
+      <span>Biblioteca visual</span><i>✦</i><span>Referências</span><i>✦</i><span>Copys</span><i>✦</i><span>Fontes</span><i>✦</i><span>Elementos</span><i>✦</i><span>Design systems</span><i>✦</i>
+      <span>Biblioteca visual</span><i>✦</i><span>Referências</span><i>✦</i><span>Copys</span><i>✦</i><span>Fontes</span><i>✦</i><span>Elementos</span><i>✦</i><span>Design systems</span><i>✦</i>
+    </div></div>
+    <div class="hero__vert" aria-hidden="true">Role para explorar <b>Referências — Design systems</b></div>
+    <div class="hero__side">
+      <ul class="steps" id="hero-steps" aria-label="Gere, edite, salve e reutilize"><li>Gere</li><li>Edite</li><li>Salve</li><li>Reutilize</li></ul>
+    </div>
+    <ul class="hero__list" id="hero-list" aria-label="O que a biblioteca reúne">
+      <li>/ biblioteca visual</li>
+      <li class="is-on">Referências</li>
+      <li>Copys</li>
+      <li>Fontes</li>
+      <li>Elementos</li>
+      <li>Design systems</li>
+    </ul>
+  </section>
+
+  <!-- Dobra 2 (referência "Our Technology"): texto à esquerda, dispositivo de vidro em camadas no centro (cena 3D), chamadas à direita -->
+  <section class="o2" id="o2">
+   <div class="o2__sticky">
+    <svg aria-hidden="true" style="position:absolute;width:0;height:0"><filter id="o2key" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%"><feColorMatrix type="matrix" values="1.1 0 0 0 0  0 1.1 0 0 0  0 0 1.1 0 0  0.333 0.333 0.333 0 0"/><feComponentTransfer><feFuncA type="linear" slope="9" intercept="-1.25"/></feComponentTransfer></filter></svg>
+<video class="o2__video" id="o2-video" src="ASSETS/video/dobra-2.mp4" muted playsinline preload="auto" aria-hidden="true"></video>
+    <div class="o2__copy">
+      <span class="o2__label" id="o2-label">Seu material existe. O difícil é encontrar.</span>
+      <h2 class="o2__title" id="o2-title"><span class="split-line"><span class="split-inner">Ultron Design</span></span><span class="split-line"><span class="split-inner">junta tudo isso</span></span><span class="split-line"><span class="split-inner">em um só lugar.</span></span></h2>
+      <p class="o2__sub" id="o2-sub">E conecta cada material ao próximo passo da criação.</p>
+      <div class="o2__cta" id="o2-cta"><a class="btn btn--link" href="#como-funciona"><i class="line"></i><span>Ver como funciona</span><em>↗</em></a></div>
+    </div>
+    <ul class="o2__call" id="o2-call">
+      <li><i></i><div><b>Referências</b><span>Estão em Downloads</span></div></li>
+      <li><i></i><div><b>Headlines</b><span>Ficaram em outra ferramenta</span></div></li>
+      <li><i></i><div><b>Fontes</b><span>Numa pasta de um projeto antigo</span></div></li>
+    </ul>
+    <div class="scroll-cue" id="o2-cue" aria-hidden="true"><i></i></div>
+   </div>
+  </section>
+
+  <!-- Dobra 3 (referência "Product Lineup"): quatro cartões finos; os objetos de vidro 3D ficam na cena, alinhados a cada cartão -->
+  <section class="o3" id="o3">
+   <div class="o3__sticky">
+    <span class="o3__tag" id="o3-tag">Biblioteca de referências</span>
+    <div class="o3__head">
+      <h2 class="o3__title" id="o3-title"><span class="split-line"><span class="split-inner">Reconheça a referência</span></span><span class="split-line"><span class="split-inner">antes de abrir o arquivo.</span></span></h2>
+      <p class="o3__lead" id="o3-lead">Cada referência aparece com uma prévia visual grande. Você bate o olho, identifica e segue em frente.</p>
+    </div>
+    <div class="o3__cards" id="o3-cards">
+      <article class="o3c"><div class="o3c__txt"><h3>Prévias grandes</h3><p>Encontre pelo que você vê</p></div><div class="o3c__obj"></div><a class="o3c__go" href="#biblioteca" aria-label="Prévias grandes">↗</a></article>
+      <article class="o3c"><div class="o3c__txt"><h3>Nome, categoria e tags</h3><p>Filtre por estilo, segmento ou projeto</p></div><div class="o3c__obj"></div><a class="o3c__go" href="#biblioteca" aria-label="Nome, categoria e tags">↗</a></article>
+      <article class="o3c"><div class="o3c__txt"><h3>Pasta monitorada</h3><p>Arquivos novos aparecem sozinhos</p></div><div class="o3c__obj"></div><a class="o3c__go" href="#biblioteca" aria-label="Pasta monitorada">↗</a></article>
+      <article class="o3c"><div class="o3c__txt"><h3>Gerar design system</h3><p>Transforme a referência em design system</p></div><div class="o3c__obj"></div><a class="o3c__go" href="#biblioteca" aria-label="Gerar design system">↗</a></article>
+    </div>
+    <div class="scroll-cue" id="o3-cue" aria-hidden="true"><i></i></div>
+   </div>
+  </section>
+
+  <section class="o4" id="o4" aria-label="Faixa de recursos">
+    <span class="o4__row" id="o4-a" aria-hidden="true">Referências<i></i>Fontes<i></i>Elementos<i></i>Design systems<i></i>Copys<i></i>Referências<i></i>Fontes<i></i>Elementos<i></i>Design systems<i></i>Copys<i></i></span>
+    <span class="o4__row o4__row--ghost" id="o4-b" aria-hidden="true">Biblioteca visual<i></i>Pasta monitorada<i></i>Busca por imagem<i></i>Biblioteca visual<i></i>Pasta monitorada<i></i>Busca por imagem<i></i>Biblioteca visual<i></i>Pasta monitorada<i></i></span>
+  </section>
+
+  <section class="o5" id="o5">
+    <div class="o5__head">
+      <div>
+        <span class="o5__tag" id="o5-tag">02 · O que a Ultron faz</span>
+        <h2 class="o5__title" id="o5-title">Tudo da sua criação<br><em>em um só lugar.</em></h2>
+      </div>
+      <p class="o5__lead">Do primeiro arquivo ao design system pronto: cada recurso conecta o material ao próximo passo.</p>
+    </div>
+    <div class="o5__grid">
+      <div class="o5__visual" aria-hidden="true">
+        <div class="o5__panel" id="o5-panel">
+          <div class="o5__scene on o5__scene--img"><img class="sc-img" src="ASSETS/img/dobra-5-paineis/biblioteca-visual.webp" alt="" width="1536" height="1024" decoding="async"></div>
+          <div class="o5__scene o5__scene--img"><img class="sc-img" src="ASSETS/img/dobra-5-paineis/pasta-monitorada.webp" alt="" width="1536" height="1024" decoding="async"></div>
+          <div class="o5__scene o5__scene--img"><img class="sc-img" src="ASSETS/img/dobra-5-paineis/busca-por-imagem.webp" alt="" width="1536" height="1024" decoding="async"></div>
+          <div class="o5__scene o5__scene--img"><img class="sc-img" src="ASSETS/img/dobra-5-paineis/design-system.webp" alt="" width="1536" height="1024" decoding="async"></div>
+          <div class="o5__scene o5__scene--img"><img class="sc-img" src="ASSETS/img/dobra-5-paineis/copys-fontes.webp" alt="" width="1536" height="1024" decoding="async"></div>
+          <div class="o5__bar"><b id="o5-num">01 / 05</b><span id="o5-name">Biblioteca visual</span><span class="o5__dots" id="o5-dots"><i class="on"></i><i></i><i></i><i></i><i></i></span></div>
+        </div>
+      </div>
+      <div class="o5__cards" id="o5-cards">
+        <article class="o5c on"><span class="o5c__n">01</span><h3>Biblioteca visual</h3><p>Todas as suas referências em prévias grandes, com nome, categoria e tags. Você bate o olho e já sabe o que é.</p><ul><li><b>Prévias grandes</b>Veja a imagem inteira, não um ícone.</li><li><b>Categorias e tags</b>Filtre por estilo, segmento ou projeto.</li><li><b>Coleções</b>Agrupe por cliente ou campanha.</li><li><b>Favoritos</b>As melhores sempre à mão.</li></ul><a href="#biblioteca">Saiba mais <span aria-hidden="true">→</span></a></article>
+        <article class="o5c"><span class="o5c__n">02</span><h3>Pasta monitorada</h3><p>Aponte uma pasta do computador e a Ultron cuida do resto: tudo o que cair lá aparece na biblioteca sozinho.</p><ul><li><b>Entrada automática</b>Arquivos novos aparecem sem importar.</li><li><b>Sem bagunça</b>Seus arquivos continuam onde estão.</li><li><b>Tempo real</b>A biblioteca atualiza enquanto você trabalha.</li><li><b>Várias pastas</b>Monitore Downloads, projetos e mais.</li></ul><a href="#biblioteca">Saiba mais <span aria-hidden="true">→</span></a></article>
+        <article class="o5c"><span class="o5c__n">03</span><h3>Busca por imagem</h3><p>Em vez de lembrar o nome do arquivo, procure pelo que você vê. A Ultron encontra referências parecidas.</p><ul><li><b>Pelo que você vê</b>Envie uma imagem e ache similares.</li><li><b>Por cor e estilo</b>Paletas e composições parecidas.</li><li><b>Resultado rápido</b>Milhares de arquivos em segundos.</li><li><b>Sem digitar</b>Menos tempo procurando, mais criando.</li></ul><a href="#biblioteca">Saiba mais <span aria-hidden="true">→</span></a></article>
+        <article class="o5c"><span class="o5c__n">04</span><h3>Design system</h3><p>Transforme uma referência em design system: cores, tipografia e componentes extraídos e organizados.</p><ul><li><b>Cores e paleta</b>Tokens extraídos da referência.</li><li><b>Tipografia</b>Fontes e escalas identificadas.</li><li><b>Componentes</b>Botões, cards e padrões prontos.</li><li><b>Reutilize</b>Salve e use em qualquer projeto.</li></ul><a href="#biblioteca">Saiba mais <span aria-hidden="true">→</span></a></article>
+        <article class="o5c"><span class="o5c__n">05</span><h3>Copys e fontes</h3><p>Textos, fontes e elementos reunidos junto das referências, para nada ficar espalhado em pastas antigas.</p><ul><li><b>Copys salvas</b>Guarde os textos que funcionam.</li><li><b>Fontes</b>Veja e compare tipografias.</li><li><b>Elementos</b>Ícones, botões e blocos reaproveitáveis.</li><li><b>Tudo conectado</b>Cada material leva ao próximo passo.</li></ul><a href="#biblioteca">Saiba mais <span aria-hidden="true">→</span></a></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="o6" id="o6" aria-label="Como funciona">
+    <div class="o6__sticky">
+      <div class="o6__head">
+        <div><span class="o6__tag">03 · Como funciona</span><h2 class="o6__title">Do arquivo solto<br>ao <em>design system pronto.</em></h2></div>
+      </div>
+      <div class="o6__track" id="o6-track">
+        <article class="o6c"><span class="o6c__step">Passo 01</span><div class="o6c__n">01</div><h3>Conecte sua pasta</h3><p>Aponte a pasta onde estão suas referências. A Ultron passa a monitorá-la, sem mover nada.</p><ul><li>Escolha uma ou mais pastas</li><li>Monitoramento automático</li><li>Seus arquivos ficam onde estão</li></ul></article>
+        <article class="o6c"><span class="o6c__step">Passo 02</span><div class="o6c__n">02</div><h3>Organize sem esforço</h3><p>Tudo vira prévia grande, com nome, categoria e tags. A biblioteca se monta sozinha.</p><ul><li>Prévias grandes de cada arquivo</li><li>Tags e categorias sugeridas</li><li>Coleções por projeto ou cliente</li></ul></article>
+        <article class="o6c"><span class="o6c__step">Passo 03</span><div class="o6c__n">03</div><h3>Encontre pelo que você vê</h3><p>Busque por texto, tag ou pela própria imagem. Você reconhece a referência antes de abrir o arquivo.</p><ul><li>Busca por imagem</li><li>Filtros por cor, estilo e segmento</li><li>Resultados em segundos</li></ul></article>
+        <article class="o6c"><span class="o6c__step">Passo 04</span><div class="o6c__n">04</div><h3>Gere e reutilize</h3><p>Transforme a referência em design system e salve para usar de novo no próximo projeto.</p><ul><li>Cores, tipografia e componentes</li><li>Salve e reutilize</li><li>Cada material leva ao próximo passo</li></ul></article>
+      </div>
+      <div class="o6__prog" aria-hidden="true"><i id="o6-prog"></i></div>
+    </div>
+  </section>
+
+  <section class="o7" id="o7" aria-label="Números">
+    <div class="o7__head">
+      <div><span class="o7__tag">04 · Em números</span><h2 class="o7__title">Menos tempo procurando,<br><em>mais tempo criando.</em></h2></div>
+      <p class="o7__lead">Números de exemplo do que uma biblioteca organizada pela Ultron entrega no dia a dia.</p>
+    </div>
+    <div class="o7__grid">
+      <div class="o7c o7c--big"><span class="o7c__k">Referências organizadas</span><div class="o7__bars" aria-hidden="true"><i style="--h:.35"></i><i style="--h:.5"></i><i style="--h:.42"></i><i style="--h:.68"></i><i style="--h:.58"></i><i style="--h:.82"></i><i style="--h:.74"></i><i style="--h:1"></i></div><div class="o7c__v"><span data-count="12000">0</span><small>+</small></div><p>Prévias grandes, nomes e tags sempre à mão.</p></div>
+      <div class="o7c"><span class="o7__ring" aria-hidden="true"></span><span class="o7c__k">Mais rápido para achar</span><div class="o7c__v"><span data-count="3">0</span><small>x</small></div><p>Reconheça pelo visual em vez de abrir arquivo por arquivo.</p></div>
+      <div class="o7c"><span class="o7c__k">Catalogados sozinhos</span><div class="o7c__v"><span data-count="98">0</span><small>%</small></div><p>A pasta monitorada cuida da entrada de arquivos novos.</p></div>
+      <div class="o7c"><span class="o7c__k">Passos até o design system</span><div class="o7c__v"><span data-count="4">0</span></div><p>Conectar, organizar, encontrar e gerar.</p></div>
+      <div class="o7c"><span class="o7c__k">Arquivos movidos de lugar</span><div class="o7c__v"><span data-count="0">0</span></div><p>Tudo continua na sua pasta, no seu computador.</p></div>
+    </div>
+  </section>
+
+  <section class="o8" id="o8" aria-label="Busca por imagem">
+    <div class="o8__grid">
+      <div data-rv>
+        <span class="tg">05 · Busca por imagem</span>
+        <h2 class="tt">Ache a referência<br><em>pelo que você vê.</em></h2>
+        <p class="ld" style="margin-top:18px">Em vez de lembrar o nome do arquivo, envie uma imagem. A Ultron encontra as referências parecidas na sua biblioteca em segundos.</p>
+        <ul class="o8__checks"><li>Por imagem</li><li>Por cor e estilo</li><li>Por tag e categoria</li><li>Por texto</li></ul>
+        <a class="pill pill--fill" href="#comecar">Experimentar a busca <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="o8__win o8__win--img" id="o8-win" aria-hidden="true"><img class="o8__img" src="ASSETS/img/dobra-8/busca-controles.webp" alt="" width="1254" height="1254" decoding="async"><div class="o8__scan" id="o8-scan"></div></div>
+    </div>
+  </section>
+
+  <section class="o9" id="o9" aria-label="Planos">
+    <div class="hd" data-rv><div><span class="tg">06 · Planos</span><h2 class="tt">Escolha como<br><em>começar.</em></h2></div><p class="ld">Valores de exemplo, para ilustrar a estrutura da página.</p></div>
+    <div class="o9__grid">
+      <article class="pl" data-rv><span class="pl__k">Essencial</span><div class="pl__p">R$ <span data-price="0">0</span><small> /mês</small></div><p>Para conhecer a Ultron e organizar sua primeira pasta.</p><ul><li>1 pasta monitorada</li><li>Prévias grandes</li><li>Tags e categorias</li><li>Busca por texto</li></ul><a class="pill pill--line" href="#comecar">Começar grátis</a></article>
+      <article class="pl pl--hot" data-rv><span class="pl__k">Pro</span><div class="pl__p">R$ <span data-price="29">29</span><small> /mês</small></div><p>Para quem vive de referências e quer tudo conectado.</p><ul><li>Pastas monitoradas ilimitadas</li><li>Busca por imagem</li><li>Gerar design system</li><li>Coleções e favoritos</li></ul><a class="pill pill--fill" href="#comecar">Escolher o Pro</a></article>
+      <article class="pl" data-rv><span class="pl__k">Estúdio</span><div class="pl__p">R$ <span data-price="79">79</span><small> /mês</small></div><p>Para equipes que dividem a mesma biblioteca.</p><ul><li>Tudo do Pro</li><li>Biblioteca compartilhada</li><li>Design systems da equipe</li><li>Suporte prioritário</li></ul><a class="pill pill--line" href="#comecar">Falar com a equipe</a></article>
+    </div>
+  </section>
+
+  <section class="o10" id="o10" aria-label="Novidades">
+    <div class="hd" data-rv><div><span class="tg">07 · Novidades</span><h2 class="tt">Ideias para<br><em>criar melhor.</em></h2></div><a class="pill pill--line" id="o10-all" href="#blog">Ver todos os artigos <span aria-hidden="true">→</span></a></div>
+    <div class="o10__grid">
+      <a class="pt" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-organizar.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Organização</span><h3>Como organizar mil referências sem perder o fio</h3><span class="d">5 min de leitura</span></div></a>
+      <a class="pt" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-design.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Design system</span><h3>Da referência ao design system em quatro passos</h3><span class="d">7 min de leitura</span></div></a>
+      <a class="pt" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-pasta.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Fluxo de trabalho</span><h3>Pasta monitorada: o fim dos arquivos esquecidos</h3><span class="d">4 min de leitura</span></div></a>
+      <a class="pt pt--more" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-tags.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Organização</span><h3>Tags que realmente ajudam a encontrar</h3><span class="d">4 min de leitura</span></div></a>
+      <a class="pt pt--more" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-paletas.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Design system</span><h3>Paletas de cor direto da referência</h3><span class="d">6 min de leitura</span></div></a>
+      <a class="pt pt--more" href="#blog" data-rv><div class="pt__img"><img src="ASSETS/img/dobra-10-artigos/artigo-equipe.webp" alt="" loading="lazy" decoding="async"></div><div class="pt__b"><span class="pt__m">Equipes</span><h3>Biblioteca em equipe: boas práticas</h3><span class="d">5 min de leitura</span></div></a>
+    </div>
+  </section>
+
+  <section class="o11" id="o11" aria-label="Contato">
+    <div class="o11__cta">
+      <div class="o11__seal" aria-hidden="true"><svg viewBox="0 0 200 200"><defs><path id="seal" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs><text><textPath href="#seal">Ultron · Design · Biblioteca · Visual ·</textPath></text></svg><b>↗</b></div>
+      <h2 class="o11__big" id="o11-big"><span style="display:block">Vamos organizar</span><span style="display:block">sua <em>biblioteca?</em></span></h2>
+      <div class="o11__row"><a class="pill pill--fill" href="#comecar">Começar agora <span aria-hidden="true">→</span></a><a class="o11__mail" href="mailto:contato@ultron.design">contato@ultron.design</a></div>
+    </div>
+    <footer class="ft" id="contato" data-rv>
+      <div class="ft__brand"><img src="ASSETS/img/logo/logo-ultron.png" alt="Ultron Design"><p>Aplicativo para organizar e criar sites. Referências, fontes e elementos em uma biblioteca visual.</p></div>
+      <div><h4>Navegar</h4><a href="#top">Início</a><a href="#o5">Recursos</a><a href="#o6">Como funciona</a><a href="#o9">Planos</a><a href="#o10">Novidades</a></div>
+      <div><h4>Recursos</h4><a href="#o5">Biblioteca visual</a><a href="#o5">Pasta monitorada</a><a href="#o8">Busca por imagem</a><a href="#o5">Design system</a></div>
+      <div><h4>Novidades por e-mail</h4><a href="#o11" style="color:#A9A59E;margin-bottom:16px">Dicas e lançamentos, direto na sua caixa de entrada.</a><form class="ft__news" novalidate><input type="email" placeholder="Seu e-mail" aria-label="Seu e-mail"><button type="submit" aria-label="Assinar">→</button></form></div>
+      <div class="ft__bot" style="grid-column:1/-1"><span>© 2026 Ultron Design. Todos os direitos reservados.</span><button class="ft__top" id="ft-top" aria-label="Voltar ao topo">↑</button></div>
+    </footer>
+  </section>
+</div>
+
+<div class="md" id="md" aria-hidden="true"><div class="md__box" role="dialog" aria-modal="true" aria-labelledby="md-t"><button class="md__x" type="button" aria-label="Fechar">×</button><div id="md-c"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* Animações da entrada, com os presets e valores do design system (GSAP 3). */
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const wait = (ms) => new Promise(r => setTimeout(r, ms));
+  const G = window.gsap;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // rolagem suave (Lenis) ligada ao relógio do GSAP e ao ScrollTrigger; sem movimento reduzido ela fica desligada
+  let lenis = null;
+  try {
+    if (!reduce && G && window.Lenis) {
+      lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true }); window.__lenis = lenis;
+      G.ticker.add((t) => lenis.raf(t * 1000)); G.ticker.lagSmoothing(0);
+      if (window.ScrollTrigger) { G.registerPlugin(window.ScrollTrigger); lenis.on('scroll', window.ScrollTrigger.update); }
+    }
+  } catch (e) { console.warn('Ultron: rolagem suave indisponível', e); }
+  const isTouch = matchMedia('(hover: none)').matches;
+
+  /* ---------- divisão de texto em linhas e letras ---------- */
+  const isPlain = el => [...el.childNodes].every(n => n.nodeType === 3 || n.nodeName === 'BR');
+  function restore(el) { if (el._orig !== undefined) el.innerHTML = el._orig; }
+  function splitLines(el) {
+    if (el._orig === undefined) el._orig = el.innerHTML; else el.innerHTML = el._orig;
+    if (!isPlain(el)) {
+      const inner = document.createElement('span'); inner.className = 'split-inner';
+      while (el.firstChild) inner.appendChild(el.firstChild);
+      const wrap = document.createElement('span'); wrap.className = 'split-line';
+      wrap.appendChild(inner); el.appendChild(wrap);
+      return [inner];
+    }
+    el.innerHTML = el.innerHTML.split(/<br\s*\/?>/i)
+      .map(seg => seg.trim().split(/\s+/).filter(Boolean).map(w => `<span class="sw" style="display:inline-block">${w}</span>`).join(' '))
+      .join('<br>');
+    const lines = []; let top = null;
+    $$('.sw', el).forEach(w => {
+      if (top === null || Math.abs(w.offsetTop - top) > 2) { lines.push([]); top = w.offsetTop; }
+      lines[lines.length - 1].push(w.innerHTML);
+    });
+    el.innerHTML = lines.map(l => `<span class="split-line"><span class="split-inner">${l.join(' ')}</span></span>`).join('');
+    return $$('.split-inner', el);
+  }
+
+  // splitTextRotateIn: y 120%, rotate 7, origin 0 0, stagger .1 (power1.in), power3.out
+  function rotateIn(el, { rotate = 7, duration = .8, delay = 0 } = {}) {
+    const lines = splitLines(el);
+    return G.from(lines, { y: '120%', rotate, transformOrigin: '0 0', duration, delay, ease: 'power3.out', stagger: { each: .1, ease: 'power1.in' }, onComplete: () => restore(el) });
+  }
+  // splitCharsWipeUpIn: y 100%, expo.out, 1.5s, atraso .035 × linha + .025 × letra
+  function charsIn(el, { delay = 0, duration = 1.5 } = {}) {
+    const lines = splitLines(el);
+    const chars = [], delays = [];
+    lines.forEach((line, li) => {
+      line.innerHTML = [...line.textContent].map(c => `<span class="split-ch">${c === ' ' ? ' ' : c.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`).join('');
+      $$('.split-ch', line).forEach(ch => { delays.push(.035 * li + .025 * chars.length + delay); chars.push(ch); });
+    });
+    return G.from(chars, { y: '100%', ease: 'expo.out', duration, stagger: (i) => delays[i] - delay, delay, onComplete: () => restore(el) });
+  }
+  // blocos: yPercent 100, autoAlpha 0, rotate 14, expo.out, 1s
+  function blockIn(targets, { delay = 0, stagger = .1 } = {}) {
+    return G.from(targets, { yPercent: 100, autoAlpha: 0, rotate: 14, ease: 'expo.out', duration: 1, delay, stagger, transformOrigin: '0 0' });
+  }
+
+  /* ---------- menu: letras rolam no hover ---------- */
+  $$('.nav-link').forEach(link => {
+    const text = link.textContent;
+    link.setAttribute('aria-label', text);
+    link.innerHTML = [...text].map(c => `<span class="ch" aria-hidden="true">${c}</span>`).join('');
+    if (!G || isTouch) return;
+    const chars = $$('.ch', link);
+    const tl = G.timeline({ paused: true })
+      .set(chars, { textShadow: '0 1.4em' }, 0)
+      .to(chars, { yPercent: -100, duration: .5, ease: 'power1.out', stagger: .035 }, 0)
+      .set(chars, { yPercent: 0, textShadow: 'none' });
+    link.addEventListener('mouseenter', () => { if (!tl.isActive()) tl.restart(); });
+  });
+
+  /* ---------- entrada do hero ---------- */
+  function heroIntro() {
+    const letters = $$('.logo__text span');
+    G.from(letters, { yPercent: 110, duration: 1, ease: 'expo.out', stagger: .05 });
+    G.from('.logo img', { scale: 0, rotation: -90, duration: 1, ease: 'expo.out' });
+    G.from('.topnav nav > *, .topnav__cta > *', { yPercent: 100, autoAlpha: 0, rotate: 6, duration: 1, ease: 'expo.out', stagger: .08, delay: .2, transformOrigin: '0 0' });
+    $$('#hero-title span').forEach((el, i) => rotateIn(el, { rotate: 7, duration: 1, delay: i * 0.15 }));
+    charsIn($('#hero-eyebrow'), { delay: .4 });
+    rotateIn($('#hero-lead'), { rotate: 7, duration: .8, delay: .5 });
+    blockIn($$('#hero-cta > *'), { delay: .7 });
+    blockIn($$('#hero-list li'), { delay: .8, stagger: .06 });
+    blockIn($$('#hero-stats > *'), { delay: .9, stagger: .08 });
+    // os números sobem de 0 até o valor real: na abertura e toda vez que a dobra 1 volta a aparecer
+    const statEls = $$('#hero-stats b[data-to]'); let statTw = [];
+    const countStats = (delay) => {
+      statTw.forEach(t => t.kill()); statTw = [];
+      statEls.forEach((b, i) => {
+        const to = +b.dataset.to, suf = b.dataset.suf || '', o = { v: 0 };
+        b.textContent = '0' + suf;
+        statTw.push(G.to(o, { v: to, duration: 3.4, delay: delay + i * 0.15, ease: 'power2.out', onUpdate: () => { b.textContent = Math.round(o.v) + suf; }, onComplete: () => { b.textContent = to + suf; } }));
+      });
+    };
+    countStats(1.1);
+    if ('IntersectionObserver' in window && statEls.length) {
+      let seen = true;
+      new IntersectionObserver((es) => {
+        const vis = es[0].isIntersecting;
+        if (vis && !seen) countStats(0.15);
+        if (!vis) { statTw.forEach(t => t.kill()); statTw = []; statEls.forEach(b => { b.textContent = '0' + (b.dataset.suf || ''); }); }
+        seen = vis;
+      }, { threshold: 0.35 }).observe($('#hero-stats'));
+    }
+    G.from('#hero-steps', { autoAlpha: 0, duration: 1.4, delay: 1.3, ease: 'expo.out' });
+    startSteps();
+    startFx();                                   // scroll e cursor já valem desde o início
+    pxIntro.forEach((o, i) => G.to(o, { v: 1, duration: 1.6, delay: 0.15 + i * 0.15, ease: 'power2.out' }));   // hero se monta em pixels
+    setTimeout(() => { splitHeadline(); startGlitch(); }, 2800);             // só divide em letras depois da animação de entrada
+  }
+
+  /* ---------- cartão: Gere, Edite, Salve e Reutilize giram em órbita ---------- */
+  let stepsStarted = false;
+  function startSteps() {
+    if (stepsStarted) return; stepsStarted = true;
+    const box = $('#hero-steps');
+    if (!box) return;
+    const items = $$('li', box), n = items.length;
+    const SPEED = (2 * Math.PI) / 9;                 // uma volta a cada 9 s
+    const t0 = performance.now();
+    function render(now) {
+      const t = reduce ? 0 : (now - t0) / 1000;
+      const W = box.clientWidth, H = box.clientHeight;
+      const pw = Math.max(...items.map(l => l.offsetWidth));
+      const rx = Math.max(24, (W - pw) / 2 - 2), ry = H * 0.3;
+      box.style.setProperty('--ow', (rx * 2) + 'px'); box.style.setProperty('--oh', (ry * 2) + 'px');
+      let front = 0, best = -2;
+      items.forEach((li, i) => {
+        const th = -SPEED * t + i * 2 * Math.PI / n + Math.PI / 2;   // a etiqueta 0 começa na frente
+        const s = Math.sin(th), z = (s + 1) / 2;
+        li.style.transform = `translate(calc(-50% + ${(Math.cos(th) * rx).toFixed(1)}px), calc(-50% + ${(s * ry).toFixed(1)}px)) scale(${(0.8 + 0.2 * z).toFixed(3)})`;
+        li.style.opacity = (0.45 + 0.55 * z).toFixed(2);
+        li.style.zIndex = Math.round(z * 10);
+        if (s > best) { best = s; front = i; }
+      });
+      items.forEach((li, i) => li.classList.toggle('is-active', i === front));
+      if (!reduce) requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+  }
+
+  /* ---------- scroll: os elementos reagem à direção e à velocidade ---------- */
+  // Funciona com a roda do mouse, o trackpad, o toque e a rolagem real da página.
+  const fx = { v: 0, vx: 0, s: 0, sx: 0 };
+  let fxStarted = false, lastScrollY = scrollY, lastTouch = null;
+  const c1 = (n) => Math.max(-1, Math.min(1, n));
+  addEventListener('wheel', (e) => {
+    fx.v = c1(fx.v + c1(e.deltaY / 100) * 0.45);
+    fx.vx = c1(fx.vx + c1(e.deltaX / 100) * 0.45);
+  }, { passive: true });
+  addEventListener('touchstart', (e) => { lastTouch = e.touches[0]; }, { passive: true });
+  addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (lastTouch) {
+      fx.v = c1(fx.v - (t.clientY - lastTouch.clientY) / 40);
+      fx.vx = c1(fx.vx - (t.clientX - lastTouch.clientX) / 40);
+    }
+    lastTouch = t;
+  }, { passive: true });
+  addEventListener('scroll', () => { fx.v = c1(fx.v + (scrollY - lastScrollY) / 60); lastScrollY = scrollY; }, { passive: true });
+
+  /* ---------- título: cada letra se move junto com o cursor ---------- */
+  const pointer = { x: -9999, y: -9999 };
+  let headChars = [];
+  addEventListener('pointermove', (e) => { pointer.x = e.clientX; pointer.y = e.clientY; }, { passive: true });
+  document.addEventListener('pointerleave', () => { pointer.x = pointer.y = -9999; });
+  function splitHeadline() {
+    const h1 = $('#hero-title');
+    if (!h1 || headChars.length) return;
+    h1.setAttribute('aria-label', h1.textContent);
+    $$(':scope > span', h1).forEach(line => {
+      line.setAttribute('aria-hidden', 'true');
+      const parts = [...line.childNodes].map(n => ({ t: n.textContent, hl: n.nodeName === 'EM' }));
+      line.innerHTML = parts.map(pt => pt.t.trim().split(/\s+/).filter(Boolean)
+        .map(w => `<span class="w${pt.hl ? ' hl' : ''}">${[...w].map(ch => `<span class="c">${ch}</span>`).join('')}</span>`).join(' ')).join(' ');
+    });
+    headChars = $$('.c', h1).map(el => ({ el, x: 0, y: 0, r: 0 }));
+  }
+
+  /* a palavra em destaque ("IMAGEM.") é "puxada" para o lado por um instante e volta, com um leve corte de cor: sem trocar letras */
+  let glitchOn = false;
+  function startGlitch() {
+    if (glitchOn || reduce) return;
+    const word = $('#hero-title .hl'); if (!word) return;
+    glitchOn = true;
+    const chars = $$('.c', word); let busy = false;
+    const pull = () => {
+      if (busy) return; busy = true;
+      word.classList.add('glitching');
+      chars.forEach((c, i) => {
+        if (!c.animate) return;
+        c.animate([
+          { translate: '0 0', scale: '1 1' },
+          { translate: `${(1.5 + i * 1.3).toFixed(1)}px 0`, scale: '1.035 1', offset: 0.32 },
+          { translate: '-0.8px 0', scale: '0.995 1', offset: 0.62 },
+          { translate: '0 0', scale: '1 1' },
+        ], { duration: 420, delay: i * 16, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      });
+      setTimeout(() => { word.classList.remove('glitching'); busy = false; }, 420 + chars.length * 16);
+    };
+    setTimeout(pull, 400);
+    (function loop() { setTimeout(() => { pull(); loop(); }, 4500 + Math.random() * 4000); })();
+    word.addEventListener('mouseenter', pull);
+  }
+
+  function startFx() {
+    if (fxStarted) return; fxStarted = true;
+    if (reduce) return;
+    const el = {
+      eyebrow: $('#hero-eyebrow'), title: $('#hero-title'), lead: $('#hero-lead'), cta: $('#hero-cta'),
+      side: $('.hero__side'), steps: $('#hero-steps'), list: $('#hero-list'),
+    };
+    const R = 170;                                       // raio de influência do cursor, em px
+    const pxh = [el.eyebrow, el.title, el.lead, el.cta, el.side].map(pixel);   // montar/desmontar em pixels
+    const hdrNav = $('.topnav nav'), hdrMenu = $('.topnav .menu'), hdrLogo = $('.topnav .logo');
+    function tick() {
+      fx.v *= 0.93; fx.vx *= 0.93;                       // a velocidade se dissipa sozinha
+      fx.s += (fx.v - fx.s) * 0.12; fx.sx += (fx.vx - fx.sx) * 0.12;
+      const s = fx.s, x = fx.sx;
+      // parallax pela posição da rolagem: cada bloco sobe numa velocidade (profundidade diferente) e some ao sair da dobra
+      const py = Math.min(scrollY, innerHeight * 1.2), hf = Math.max(0, 1 - scrollY / (innerHeight * 0.75));
+      // textos andam no sentido contrário ao scroll; cartão e lista, com atraso e menos amplitude
+      // câmera: conforme a rolagem avança, o texto se afasta de leve (escala) enquanto sobe, em sincronia com o robô que se aproxima
+      const ce = clamp01(scrollY / (innerHeight * 0.7)), cam = (1 - 0.05 * ce).toFixed(4);
+      el.eyebrow.style.translate = `${(-x * 8).toFixed(2)}px ${(-s * 10 - py * 0.14).toFixed(2)}px`; el.eyebrow.style.scale = cam;
+      el.title.style.transform = `translate3d(${(-x * 18).toFixed(2)}px,${(-s * 28 - py * 0.12).toFixed(2)}px,0) skewY(${(-s * 2.2).toFixed(2)}deg) skewX(${(x * 2).toFixed(2)}deg) scale(${cam})`;
+      el.lead.style.translate = `${(-x * 10).toFixed(2)}px ${(-s * 18 - py * 0.09).toFixed(2)}px`; el.lead.style.scale = cam;
+      el.cta.style.translate = `${(-x * 12).toFixed(2)}px ${(-s * 14 - py * 0.06).toFixed(2)}px`; el.cta.style.scale = cam;
+      el.side.style.translate = `${(x * 10).toFixed(2)}px ${(s * 16 + py * 0.08).toFixed(2)}px`;
+      el.steps.style.translate = `${(x * 8).toFixed(2)}px ${(s * 14 + py * 0.1).toFixed(2)}px`;
+      el.list.style.translate = `${(x * 6).toFixed(2)}px ${(s * 8 + py * 0.12).toFixed(2)}px`;
+      const hp = 1 - clamp01(scrollY / (innerHeight * 0.6));   // desmonta em pixels ao descer, remonta ao subir
+      document.documentElement.style.setProperty('--hp', '1');     // o que é da dobra 1 (estado e menu do cabeçalho) sai junto
+      // saída em cascata (rótulo → título → texto → botões), como numa única tomada
+      const he = scrollY / innerHeight;
+      pxh.forEach((h, i) => h.set(Math.min(pxIntro[i].v, 1 - clamp01((he - i * 0.04) / 0.52))));
+      if (brain && brain.setScroll) brain.setScroll(x, s);
+      if (brain && brain.setProgress) brain.setProgress(scrollY / innerHeight);   // a cena 3D acompanha a rolagem da página inteira
+
+      // letras do título: seguem o cursor e voltam suavemente ao lugar
+      for (const c of headChars) {
+        const b = c.el.getBoundingClientRect();
+        const cx = b.left + b.width / 2 - c.x, cy = b.top + b.height / 2 - c.y;
+        const dx = pointer.x - cx, dy = pointer.y - cy, d = Math.hypot(dx, dy);
+        const w = Math.max(0, 1 - d / R), k = w * w;
+        c.x += (dx * k * 0.45 - c.x) * 0.16;
+        c.y += (dy * k * 0.45 - c.y) * 0.16;
+        c.r += ((dx / R) * k * 10 - c.r) * 0.16;
+        if (Math.abs(c.x) + Math.abs(c.y) + Math.abs(c.r) < 0.02 && k === 0) { if (c.el.style.transform) c.el.style.transform = ''; continue; }
+        c.el.style.transform = `translate3d(${c.x.toFixed(2)}px,${c.y.toFixed(2)}px,0) rotate(${c.r.toFixed(2)}deg)`;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* ---------- loader ---------- */
+  const loader = { el: $('#loader'), spinner: $('#loader .loader__spinner'), loading: $('#loader .loader__loading > span') };
+  let spinTween = null;
+  function loaderOut(onReveal) {
+    return G.timeline({ onComplete: () => { spinTween && spinTween.kill(); } })
+      .to(loader.loading, { yPercent: -110, rotate: 5, ease: 'expo.out', duration: 2 }, 0)
+      .to(loader.spinner, { autoAlpha: 0, scale: 0, duration: .5, ease: 'expo.in' }, 0)
+      .call(onReveal, null, .7)
+      .to(loader.el, { autoAlpha: 0, duration: .6, ease: 'none' }, .8);
+  }
+
+  /* ---------- cena 3D (cérebro de pirâmides) com fallback 2D ---------- */
+  const canvas = $('#webgl');
+  let brain = null;
+
+  function startFallback() {
+    document.documentElement.classList.add('no-webgl');
+    canvas.classList.remove('is-visible');
+    const cv = $('#fallback'), ctx = cv.getContext('2d');
+    const pal = ['#FFB829', '#FFB829', '#E0A020', '#FF6B00', '#FF9A4D', '#189B81', '#2FC0B0', '#FFE1CC', '#FFFFFF'];
+    let W, H, pts = []; const dpr = Math.min(devicePixelRatio || 1, 2);
+    function init() {
+      W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.min(2400, Math.floor(W * H / 420)); pts = [];
+      const cx = W * .5, cy = H * .48, rx = Math.min(W * .3, 460), ry = Math.min(H * .36, 300);
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()), inBrain = Math.random() < .82;
+        pts.push({ x: inBrain ? cx + Math.cos(a) * rx * r : Math.random() * W, y: inBrain ? cy + Math.sin(a) * ry * r * (Math.sin(a) > 0 ? .75 : 1) : Math.random() * H,
+          s: inBrain ? 2.5 + Math.random() * 3.5 : 4 + Math.random() * 7, c: pal[(Math.random() * pal.length) | 0], rot: Math.random() * 6.28, v: (Math.random() - .5) * .01,
+          ph: Math.random() * 6.28, o: inBrain ? .75 + Math.random() * .25 : .45 + Math.random() * .4, stroke: !inBrain || Math.random() < .3 });
+      }
+    }
+    function draw(t) {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of pts) {
+        const s = p.s, dx = Math.sin(t * .0006 + p.ph) * 3, dy = Math.cos(t * .0005 + p.ph) * 3;
+        ctx.save(); ctx.translate(p.x + dx, p.y + dy); ctx.rotate(p.rot + t * p.v * .05); ctx.globalAlpha = p.o;
+        ctx.beginPath(); ctx.moveTo(0, -s); ctx.lineTo(s * .87, s * .5); ctx.lineTo(-s * .87, s * .5); ctx.closePath();
+        if (p.stroke) { ctx.strokeStyle = p.c; ctx.lineWidth = 1; ctx.stroke(); } else { ctx.fillStyle = p.c; ctx.fill(); }
+        ctx.restore();
+      }
+      if (!reduce) requestAnimationFrame(draw);
+    }
+    init(); requestAnimationFrame(draw);
+    addEventListener('resize', () => { init(); if (reduce) draw(0); });
+  }
+
+  async function startBrain() {
+    try {
+      const { createRobot } = await import('./ASSETS/js/ultron-robot.js');
+      brain = await createRobot(canvas); window.ultron = brain;   // robô 3D, no centro da dobra
+    } catch (err) {
+      console.warn('Ultron: cena 3D indisponível, usando partículas 2D.', err);
+      brain = null; startFallback();
+    }
+  }
+
+  async function boot() {
+    if (!G || reduce) {
+      loader.el.style.display = 'none';
+      startSteps(); startFx(); splitHeadline();
+      await startBrain();
+      if (brain) { brain.activate(null); canvas.classList.add('is-visible'); }
+      return;
+    }
+    spinTween = G.to(loader.spinner, { rotate: '+=90', duration: 1, ease: 'quad.inOut', repeat: -1 });
+    const ready = startBrain();
+    await Promise.all([Promise.race([ready, wait(9000)]), wait(1600), document.fonts ? document.fonts.ready : 0]);
+    let revealed = false, introDone = false;
+    const reveal3d = () => {
+      if (revealed || !introDone || !brain) return;
+      revealed = true; brain.activate(G); canvas.classList.add('is-visible');
+    };
+    loaderOut(() => { heroIntro(); introDone = true; reveal3d(); });
+    ready.then(reveal3d);     // se a cena terminar de carregar depois da tela de carregamento
+  }
+  /* ---------- pixels: os elementos se montam e se desmontam em blocos conforme a rolagem ---------- */
+  // Filtro SVG de pixelização por elemento: com p = 0 só restam poucos blocos grandes e quase transparentes;
+  // conforme p chega a 1 os blocos encolhem e se fundem até o elemento ficar nítido (e o filtro sai).
+  const clamp01 = (n) => Math.max(0, Math.min(1, n));
+  const pxIntro = [0, 1, 2, 3, 4].map(() => ({ v: G ? 0 : 1 }));      // montagem na entrada do hero
+  const PIXEL_TEXT = false;
+  const pixel = (() => {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none';
+    const defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); document.body.appendChild(svg);
+    const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+    let uid = 0;
+    return (el) => {
+      if (!el || reduce || !PIXEL_TEXT) return { set() {} };      // o efeito de pixels fica só no robô (a cena 3D); nos textos e cards ele está desligado
+      const id = 'px' + (uid++);
+      const f = mk('filter', { id, x: '0', y: '0', width: '100%', height: '100%', 'color-interpolation-filters': 'sRGB' });
+      const flood = mk('feFlood', { x: 0, y: 0, width: 2, height: 2 });
+      const comp = mk('feComposite', { width: 10, height: 10 });
+      const tile = mk('feTile', { result: 't' });
+      const cut = mk('feComposite', { in: 'SourceGraphic', in2: 't', operator: 'in' });
+      const grow = mk('feMorphology', { operator: 'dilate', radius: 5 });
+      const alpha = mk('feComponentTransfer', {}); const fa = mk('feFuncA', { type: 'linear', slope: 1 }); alpha.appendChild(fa);
+      [flood, comp, tile, cut, grow, alpha].forEach(n => f.appendChild(n)); defs.appendChild(f);
+      let last = -1;
+      return {
+        set(p) {
+          const key = Math.round(clamp01(p) * 60);
+          if (key === last) return; last = key;
+          if (key >= 54) { el.style.filter = ''; return; }          // quase montado: sem filtro (o vidro dos cards volta ao normal)
+          const k = key / 60;
+          const s = 2 * Math.round(1 + Math.pow(1 - k, 1.6) * 2.5);  // lado do bloco, em px (no máximo 8: efeito sutil)
+          const half = Math.max(0, s / 2 - 1);
+          flood.setAttribute('x', half); flood.setAttribute('y', half);
+          comp.setAttribute('width', s); comp.setAttribute('height', s);
+          grow.setAttribute('radius', s / 2);
+          const a = clamp01(k / 0.55);
+          fa.setAttribute('slope', (a * a * (3 - 2 * a)).toFixed(3));   // esmaece de forma gradual junto com os blocos
+          el.style.filter = `url(#${id})`;
+        },
+      };
+    };
+  })();
+
+  /* ---------- cabeçalho: comportamento do design system (logo encolhe + vidro) ao rolar ---------- */
+  function initHeader() {
+    if (!G) return;
+    const bg = $('.topnav__bg'), letters = $$('.logo__text span'), small = $('.logo small');
+    let hidden = false;
+    const upd = () => {
+      const s = scrollY > 60; if (s === hidden) return; hidden = s;
+      G.killTweensOf([bg, ...letters, small]);
+      if (s) {
+        G.timeline()
+          .to(bg, { scaleY: 1, duration: 1, ease: 'expo.out' }, 0)
+          .to(letters, { yPercent: -110, duration: 1, ease: 'expo.out', stagger: .05 }, 0)
+          .to(small, { autoAlpha: 0, duration: .5, ease: 'expo.out' }, 0);
+      } else {
+        G.timeline()
+          .to(bg, { scaleY: 0, duration: 1, ease: 'expo.out' }, 0)
+          .fromTo(letters, { yPercent: 110 }, { yPercent: 0, duration: 1, ease: 'expo.out', stagger: .05 }, 0)
+          .to(small, { autoAlpha: 1, duration: .5, ease: 'expo.out' }, .2);
+      }
+    };
+    addEventListener('scroll', upd, { passive: true }); upd();
+  }
+
+  /* ---------- rolagem suave do design system (o scroll persegue o alvo 7,5% por quadro) ---------- */
+  const smooth = { on: !isTouch && !reduce, target: scrollY, current: scrollY, active: false };
+  const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+  addEventListener('wheel', (e) => {
+    if (!smooth.on || e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    const d = e.deltaMode === 1 ? e.deltaY * 40 : e.deltaMode === 2 ? e.deltaY * innerHeight : e.deltaY;
+    if (!smooth.active) smooth.current = smooth.target = scrollY;
+    smooth.target = Math.min(Math.max(smooth.target + d, 0), maxScroll());
+    smooth.active = true;
+  }, { passive: false });
+  addEventListener('scroll', () => { if (!smooth.active) smooth.current = smooth.target = scrollY; }, { passive: true });
+  let smoothLast = performance.now();
+  (function smoothTick(now) {
+    const k = Math.min((now - smoothLast) / 16.67, 3); smoothLast = now;
+    if (smooth.active) {
+      smooth.current += (smooth.target - smooth.current) * 0.075 * k;
+      if (Math.abs(smooth.target - smooth.current) < 0.5) { smooth.current = smooth.target; smooth.active = false; }
+      window.scrollTo(0, smooth.current);
+    }
+    requestAnimationFrame(smoothTick);
+  })(smoothLast);
+
+  /* ---------- dobra 2: a rolagem conduz a cena (informações surgem enquanto o robô vira a mão com a pasta) ---------- */
+  // etapas, em função do progresso q (0 → 1) enquanto a dobra fica fixada:
+  //   1. as frases do título sobem girando (rotateIn do design system), depois o parágrafo
+  //   2. a mensagem de fechamento surge em destaque, abaixo da mão
+  // (os pixels do robô, a mão e a pasta com os cartões ficam por conta da cena 3D, ligada à mesma rolagem)
+  function initProblem() {
+    const sec = $('#problema');
+    if (!sec) return;
+    const lines = $$('#p-title .split-inner'), lead = $('#p-lead'), close = $('#p-close'), closeIn = $('.split-inner', close);
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const pxTitle = pixel($('#p-title')), pxLead = pixel(lead), pxClose = pixel(close), cue = $('#p-cue');
+    let q = 0;
+    function frame() {
+      const wide = innerWidth >= 900;
+      const r = sec.getBoundingClientRect();
+      const span = Math.max(1, sec.offsetHeight - innerHeight);
+      const lead0 = innerHeight * 0.5;                       // começa a surgir quando a dobra chega à metade da tela
+      const target = reduce || !wide ? 1 : c01((lead0 - r.top) / (span + lead0));
+      q += (target - q) * 0.075;                             // mesma suavização da rolagem do design system
+      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));   // saída: se desmonta em pixels quando a dobra 3 chega
+
+      lines.forEach((l, i) => {
+        const t = ss(0.0 + i * 0.04, 0.2 + i * 0.04, q);
+        l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`;
+      });
+      pxTitle.set(Math.min(ss(0, 0.22, q), out));
+      const tl = ss(0.1, 0.28, q);
+      lead.style.opacity = tl.toFixed(3); lead.style.translate = `0 ${((1 - tl) * 28).toFixed(1)}px`;
+      pxLead.set(Math.min(tl, out));
+      const tc = ss(0.36, 0.56, q);
+      closeIn.style.transform = `translateY(${((1 - tc) * 120).toFixed(1)}%) rotate(${((1 - tc) * 7).toFixed(2)}deg)`;
+      pxClose.set(Math.min(tc, out));
+      cue.style.opacity = (ss(0.5, 0.7, q) * out).toFixed(3);    // o indicador de rolagem surge depois da mensagem
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- dobra 3: biblioteca de referências ---------- */
+  // etapas, em função do progresso q (0 → 1) enquanto a dobra fica fixada:
+  //   1. o título sobe girando (acima do carrossel 3D) e o parágrafo surge embaixo dele
+  //   2. a setinha de rolagem surge embaixo
+  // (o carrossel de pôsteres do meio é da cena 3D, ligada à mesma rolagem)
+  function initLibrary() {
+    const sec = $('#biblioteca');
+    if (!sec) return;
+    const lines = $$('#l-title .split-inner'), lead = $('#l-lead'), cue = $('#l-cue');
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const pxTitle = pixel($('#l-title')), pxLead = pixel(lead);
+
+    let q = 0;
+    function frame(now) {
+        const wide = innerWidth >= 900;
+      const r = sec.getBoundingClientRect();
+      const span = Math.max(1, sec.offsetHeight - innerHeight);
+      const lead0 = innerHeight * 0.5;
+      const target = reduce || !wide ? 1 : c01((lead0 - r.top) / (span + lead0));
+      q += (target - q) * 0.075;                             // mesma suavização da rolagem do design system
+      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));
+
+      lines.forEach((l, i) => {
+        const t = ss(0.0 + i * 0.03, 0.16 + i * 0.03, q);
+        l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`;
+      });
+      pxTitle.set(Math.min(ss(0, 0.18, q), out));
+      const tl = ss(0.08, 0.22, q);
+      lead.style.opacity = tl.toFixed(3); lead.style.translate = `0 ${((1 - tl) * 28).toFixed(1)}px`;
+      pxLead.set(Math.min(tl, out));
+
+      cue.style.opacity = (ss(0.7, 0.88, q) * out).toFixed(3);   // a setinha surge quando tudo já apareceu
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- dobra 2 (dispositivo): a rolagem monta o texto e as chamadas, com o mesmo efeito de pixels ---------- */
+  function initOrbFold() {
+    const sec = $('#o2');
+    if (!sec) return;
+    const label = $('#o2-label'), lines = $$('#o2-title .split-inner'), sub = $('#o2-sub'), cta = $('#o2-cta'), calls = $$('#o2-call li'), cue = $('#o2-cue');
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const px = [label, $('#o2-title'), sub, cta, ...calls].map(pixel);
+    const vid = $('#o2-video'), copy = $('.o2__copy'); const VSTART = 1.0; let vt = VSTART;     // o primeiro segundo do vídeo é cortado (as bordas dele ficavam falhadas)
+    // todos os textos da dobra são divididos em letras para receber o "puxão" (o mesmo da palavra IMAGEM do hero)
+    const titleEl = $('#o2-title');
+    const mkChars = (el) => { el.innerHTML = el.textContent.trim().split(/\s+/).map(w => `<span class="w">${[...w].map(ch => `<span class="c">${ch}</span>`).join('')}</span>`).join(' '); return $$('.c', el); };
+    titleEl.setAttribute('aria-label', titleEl.textContent);
+    const groups = [];                                         // { chars, amp }: cada linha/bloco é puxado em sequência
+    lines.forEach((ln) => groups.push({ chars: mkChars(ln), amp: 8 }));
+    groups.push({ chars: mkChars(label), amp: 3 });
+    groups.push({ chars: mkChars(sub), amp: 3 });
+    $$('.o2__call b').forEach((b) => groups.push({ chars: mkChars(b), amp: 3 }));
+    // o laranja ("em um só lugar.") ganha uma luz que corre pelas letras, devagar e discreta
+    groups[2].chars.forEach((c, i) => { c.style.animationDelay = (i * 0.09).toFixed(2) + 's'; });
+    let tBusy = false;
+    const pullTitle = () => {
+      if (tBusy || reduce) return; tBusy = true; titleEl.classList.add('glitching');
+      let total = 0;
+      groups.forEach((g, gi) => g.chars.forEach((c, i) => {
+        if (!c.animate) return;
+        const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = gi * 120 + i * 12;
+        total = Math.max(total, delay + 420);
+        c.animate([
+          { translate: '0 0', scale: '1 1' },
+          { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+          { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+          { translate: '0 0', scale: '1 1' },
+        ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      }));
+      setTimeout(() => { titleEl.classList.remove('glitching'); tBusy = false; }, total + 40);
+    };
+    if (!reduce) {
+      (function loop() { setTimeout(() => { const r = sec.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pullTitle(); loop(); }, 4500 + Math.random() * 3500); })();
+      titleEl.addEventListener('mouseenter', pullTitle);
+    }
+    // uma luz discreta passa de uma chamada para a próxima (Referências → Headlines → Fontes) e sai depois de passar
+    let litI = -1; const callLis = $$('#o2-call li');
+    (function lightLoop() {
+      setTimeout(() => {
+        const r = sec.getBoundingClientRect();
+        if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) {
+          litI = (litI + 1) % callLis.length; const li = callLis[litI];
+          li.classList.add('lit'); setTimeout(() => li.classList.remove('lit'), 1700);
+        }
+        lightLoop();
+      }, 2100);
+    })();
+    const rise = (el, t, d) => { el.style.opacity = t.toFixed(3); el.style.translate = `0 ${((1 - t) * (d || 26)).toFixed(1)}px`; };
+    let q = 0;
+    (function frame() {
+      const wide = innerWidth >= 900;
+      const r = sec.getBoundingClientRect();
+      const span = Math.max(1, sec.offsetHeight - innerHeight);
+      const lead0 = innerHeight * 0.5;
+      const target = reduce ? 1 : c01((lead0 - r.top) / (span + lead0));
+      q += (target - q) * 0.075;
+      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));
+      const t0 = ss(0, 0.1, q); label.style.opacity = t0.toFixed(3); px[0].set(Math.min(t0, out));
+      lines.forEach((l, i) => { const t = ss(0.05 + i * 0.06, 0.22 + i * 0.06, q); l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`; });
+      px[1].set(Math.min(ss(0.05, 0.3, q), out));
+      const t2 = ss(0.28, 0.4, q); rise(sub, t2); px[2].set(Math.min(t2, out));
+      const t3 = ss(0.38, 0.5, q); rise(cta, t3); px[3].set(Math.min(t3, out));
+      // o vídeo (peça que se fecha e vira pasta) acompanha a rolagem da dobra: abre, junta as camadas e termina na pasta da Ultron
+      const sS = 1 - r.top / innerHeight, pv = c01((sS - 1.0) / 0.95);     // 1 = o topo da dobra 2 encosta no topo da tela
+      if (vid) {
+        vid.style.opacity = (ss(0.88, 1.08, sS) * (1 - ss(2.0, 2.35, sS))).toFixed(3);
+        // câmera: a peça chega de longe (aproximação), faz um dolly lento durante a dobra e atravessa a tela ao sair
+        sec.style.setProperty('--scrim', (parseFloat(vid.style.opacity) * (1 - ss(1.5, 1.9, sS))).toFixed(3));   // sombra atrás do texto enquanto a peça aberta ocupa a tela
+        const cm = reduce ? 0 : 1;
+        vid.style.scale = (1 + cm * 0.03 * (1 - ss(0.85, 1.55, sS)) - 0.3 * ss(1.5, 2.0, sS)).toFixed(4);   // nunca menor que a tela enquanto a peça está aberta; encolhe quando vira pasta
+        vid.style.translate = `-50% calc(-50% + ${(cm * ((1.5 - sS) * 26)).toFixed(1)}px)`;
+        copy.style.translate = wide ? `0 calc(-50% + ${(cm * (1.5 - sS) * -18).toFixed(1)}px)` : '';   // o texto anda mais devagar que a peça: profundidade
+        const want = reduce ? VSTART : VSTART + ss(0.06, 0.94, pv) * ((vid.duration || 3) - VSTART - 0.05);
+        vt += (want - vt) * 0.18;
+        if (vid.readyState >= 2 && !vid.seeking && Math.abs(vid.currentTime - vt) > 0.012) vid.currentTime = vt;
+      }
+      calls.forEach((li, i) => { const t = ss(0.18 + i * 0.07, 0.32 + i * 0.07, q) * (1 - ss(0.5, 0.66, pv)); li.style.opacity = t.toFixed(3); li.style.translate = `${((1 - t) * 40).toFixed(1)}px 0`; px[4 + i].set(Math.min(t, out)); });
+      cue.style.opacity = (ss(0.65, 0.85, q) * out).toFixed(3);
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  /* ---------- dobra 3 (Product Lineup): a rolagem monta o título e os cartões; a cena 3D recebe a posição de cada cartão ---------- */
+  function initFold3() {
+    const sec = $('#o3');
+    if (!sec) return;
+    const vid = $('#o2-video');
+    const tag = $('#o3-tag'), lines = $$('#o3-title .split-inner'), lead = $('#o3-lead'), cards = $$('.o3c'), objs = $$('.o3c__obj'), cue = $('#o3-cue');
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const px = [tag, $('#o3-title'), lead, ...cards].map(pixel);
+    let q = 0;
+    // todos os textos da dobra 3 recebem o "puxão" (o mesmo da palavra IMAGEM do hero); o laranja ganha uma luz que corre pelas letras
+    const t3 = $('#o3-title');
+    const mkChars = (el) => { el.innerHTML = el.textContent.trim().split(/\s+/).map(w => `<span class="w">${[...w].map(ch => `<span class="c">${ch}</span>`).join('')}</span>`).join(' '); return $$('.c', el); };
+    t3.setAttribute('aria-label', t3.textContent);
+    const groups3 = [];
+    lines.forEach((ln) => groups3.push({ chars: mkChars(ln), amp: 8 }));
+    groups3.push({ chars: mkChars(tag), amp: 3 });
+    groups3.push({ chars: mkChars(lead), amp: 2.5 });
+    $$('.o3c h3').forEach((h) => groups3.push({ chars: mkChars(h), amp: 3 }));
+    $$('.o3c p').forEach((pp) => groups3.push({ chars: mkChars(pp), amp: 2 }));
+    groups3[1].chars.forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+    let b3 = false;
+    const pull3 = () => {
+      if (b3 || reduce) return; b3 = true; t3.classList.add('glitching');
+      let total = 0;
+      groups3.forEach((g, gi) => g.chars.forEach((c, i) => {
+        if (!c.animate) return;
+        const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = Math.min(gi, 12) * 110 + i * 12;
+        total = Math.max(total, delay + 420);
+        c.animate([
+          { translate: '0 0', scale: '1 1' },
+          { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+          { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+          { translate: '0 0', scale: '1 1' },
+        ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      }));
+      setTimeout(() => { t3.classList.remove('glitching'); b3 = false; }, total + 40);
+    };
+    if (!reduce) {
+      (function loop3() { setTimeout(() => { const r = sec.getBoundingClientRect(); if (r.top < innerHeight * 0.4 && r.bottom > innerHeight * 0.6) pull3(); loop3(); }, 4500 + Math.random() * 3500); })();
+      t3.addEventListener('mouseenter', pull3);
+    }
+    // carrossel: os 4 cards giram em anel; a rolagem (e um avanço lento sozinho) troca o card da frente
+    const cardsBox = $('#o3-cards'), NC = cards.length, dArr = cards.map(() => 0);
+    let auto = 0, manual = 0, manualCur = 0, tPrev = performance.now();
+    if (reduce) cardsBox.classList.add('is-grid');
+    cards.forEach((c, i) => c.addEventListener('click', (e) => { if (e.target.closest('.o3c__go')) return; manual += dArr[i]; }));
+    // celular: deslizar o dedo para o lado troca o card da frente
+    let sx = null, sy = 0;
+    cardsBox.addEventListener('touchstart', (e) => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    cardsBox.addEventListener('touchend', (e) => {
+      if (sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+      if (Math.abs(dx) > 36 && Math.abs(dx) > Math.abs(dy) * 1.4) manual += dx < 0 ? 1 : -1;
+    }, { passive: true });
+    (function frame() {
+      const now = performance.now(), dt = Math.min(0.05, (now - tPrev) / 1000); tPrev = now;
+      const wide = innerWidth >= 900;
+      const r = sec.getBoundingClientRect();
+      const span = Math.max(1, sec.offsetHeight - innerHeight);
+      const lead0 = innerHeight * 0.5;
+      const target = reduce ? 1 : c01((lead0 - r.top) / (span + lead0));
+      q += (target - q) * 0.075;
+      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));
+      const tt = ss(0, 0.1, q); tag.style.opacity = tt.toFixed(3); px[0].set(Math.min(tt, out));
+      lines.forEach((l, i) => { const t = ss(0.03 + i * 0.05, 0.2 + i * 0.05, q); l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`; });
+      px[1].set(Math.min(ss(0.03, 0.22, q), out));
+      const tl = ss(0.1, 0.24, q); lead.style.opacity = tl.toFixed(3); px[2].set(Math.min(tl, out));
+      // a pasta do vídeo (dobra 2) viaja até o card "Pasta monitorada" e dela saem os outros três objetos
+      const sS = 3 - r.top / innerHeight, go = reduce;     // 3 = o topo da dobra 3 encosta no topo da tela
+      const slots = objs.map(el => { const b = el.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; });
+      const FI = 2, cs = [2.9, 2.6, 2.55, 3.05];   // quando cada card se desenha (a pasta, na posição 2, chega primeiro)
+      const tf = go ? 1 : ss(2.0, 2.95, sS);
+      let fold;
+      if (!go && tf < 1) {
+        const vr = vid.getBoundingClientRect(), ow = vr.width * 0.49, oh = vr.height * 0.74;
+        const ox = vr.left + vr.width / 2 - ow / 2, oy = vr.top + vr.height * 0.53 - oh / 2;
+        const sl = slots[FI], k = tf;
+        fold = { x: ox + (sl.x - ox) * k, y: oy + (sl.y - oy) * k - Math.sin(Math.PI * k) * innerHeight * 0.06, w: ow + (sl.w - ow) * k, h: oh + (sl.h - oh) * k, s: 1 };
+      } else fold = { ...slots[FI], s: 1 };
+      const pops = [], rects = [];
+      // posição do anel: começa com a pasta na frente; depois avança com a rolagem e sozinho (pausa com o mouse em cima)
+      const hov = cards.some(c => c.matches(':hover'));
+      if (!go && sS > 3.25 && !hov) auto += dt * 0.16;
+      manualCur += (manual - manualCur) * 0.09;
+      const pos = FI + Math.max(0, sS - 3.1) * 2.6 + auto + manualCur;
+      const cw = cards[0].offsetWidth, step = cw * (innerWidth < 900 ? 0.92 : 1.12);
+      cards.forEach((c, i) => {
+        const t = go ? ss(0.2 + i * 0.1, 0.42 + i * 0.1, q) : ss(cs[i], cs[i] + 0.45, sS);
+        let op = 1;
+        if (go) { c.style.translate = `0 ${((1 - t) * 70).toFixed(1)}px`; c.style.scale = ''; c.style.zIndex = ''; c.classList.remove('lit'); }
+        else {
+          let d = (((i - pos) % NC) + NC) % NC; if (d > NC / 2) d -= NC; dArr[i] = d;
+          const ad = Math.abs(d);
+          c.classList.toggle('lit', ad < 0.42 && t > 0.9);
+          op = ad <= 1 ? 1 - 0.38 * ad : Math.max(0, 0.62 * (2 - ad));
+          c.style.translate = `${(d * step).toFixed(1)}px ${((1 - t) * 70).toFixed(1)}px`;
+          c.style.scale = Math.max(0.6, 1.1 - 0.2 * ad).toFixed(3);
+          c.style.zIndex = String(Math.round(10 - ad * 3));
+        }
+        c.style.opacity = (t * op).toFixed(3); px[3 + i].set(Math.min(t, out));
+        if (i === FI) { rects.push(fold); pops.push((go ? t : ss(2.05, 2.4, sS)) * out * op); return; }
+        const sl = slots[i];
+        if (go) { rects.push(sl); pops.push(t * out); return; }
+        const fx = fold.x + fold.w / 2, fy = fold.y + fold.h / 2, e = ss(0, 1, t);
+        const w = sl.w * (0.3 + 0.7 * e), h = sl.h * (0.3 + 0.7 * e), cx = fx + (sl.x + sl.w / 2 - fx) * e, cy = fy + (sl.y + sl.h / 2 - fy) * e;
+        rects.push({ x: cx - w / 2, y: cy - h / 2, w, h, s: 1 }); pops.push(ss(0, 0.4, t) * out * op);
+      });
+      if (brain && brain.setLineup) brain.setLineup(rects, pops, cards.map(c => c.matches(':hover')));
+      cue.style.opacity = (ss(0.78, 0.95, q) * out).toFixed(3);
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  /* cursor próprio: bolinha transparente com borda laranja (sem rastro) */
+  (function customCursor() {
+    if (!matchMedia('(hover:hover) and (pointer:fine)').matches) return;
+    const ring = $('#cur-ring'); if (!ring) return;
+    document.documentElement.classList.add('has-cursor');
+    let mx = -100, my = -100, x = -100, y = -100, seen = false;
+    addEventListener('pointermove', (e) => { mx = e.clientX; my = e.clientY; if (!seen) { x = mx; y = my; seen = true; } ring.classList.add('on');
+      ring.classList.toggle('is-link', !!(e.target.closest && e.target.closest('a,button,input,.o3c,.o5c,.pill,.pl,.pt,[data-rv] a'))); }, { passive: true });
+    document.addEventListener('pointerleave', () => ring.classList.remove('on'));
+    addEventListener('pointerdown', () => ring.classList.add('is-down')); addEventListener('pointerup', () => ring.classList.remove('is-down'));
+    (function loop() {
+      x += (mx - x) * 0.32; y += (my - y) * 0.32;
+      ring.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  /* brilho de 600px que segue o cursor (como no site de referência) */
+  (function cursorGlow() {
+    const g = $('#cursor-glow'); if (!g || reduce) return;
+    let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y;
+    addEventListener('pointermove', (e) => { tx = e.clientX; ty = e.clientY; g.classList.add('on'); }, { passive: true });
+    document.addEventListener('pointerleave', () => g.classList.remove('on'));
+    (function loop() { x += (tx - x) * 0.08; y += (ty - y) * 0.08; g.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`; requestAnimationFrame(loop); })();
+  })();
+
+
+  /* ---------- dobras 4 e 5: faixa gigante que anda com a rolagem; serviços com visual fixo que troca ---------- */
+  function initFold45() {
+    const o4 = $('#o4'), ra = $('#o4-a'), rb = $('#o4-b');
+    const tag = $('#o5-tag'), title = $('#o5-title'), head = $('.o5__head'), cards = $$('.o5c'), scenes = $$('.o5__scene'), panel = $('#o5-panel');
+    const num = $('#o5-num'), name = $('#o5-name'), dots = $$('#o5-dots i');
+    if (!o4 || !cards.length) return;
+    // a luz branca passa pelas letras da faixa gigante, uma depois da outra
+    [ra, rb].forEach((row, ri) => {
+      let n = 0;
+      [...row.childNodes].forEach((node) => {
+        if (node.nodeType !== 3) return;
+        const f = document.createDocumentFragment();
+        [...node.textContent].forEach((ch) => { const sp = document.createElement('span'); sp.className = 'c'; sp.textContent = ch; sp.style.animationDelay = (n++ * 0.085 + ri * 1.6).toFixed(2) + 's'; f.appendChild(sp); });
+        node.replaceWith(f);
+      });
+    });
+    const names = $$('.o5c h3').map(h => h.textContent);
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    let active = -1, sm = 0;
+    (function frame() {
+      const vh = innerHeight;
+      // faixa gigante: a linha cheia anda para a esquerda e a vazada para a direita conforme a seção cruza a tela
+      const r4 = o4.getBoundingClientRect(), p4 = reduce ? 0.5 : (vh - r4.top) / (vh + r4.height);
+      const wa = ra.scrollWidth, wb = rb.scrollWidth;
+      ra.style.transform = `translate3d(${(-(wa - innerWidth) * c01(p4) * 0.9).toFixed(1)}px,0,0)`;
+      rb.style.transform = `translate3d(${(-(wb - innerWidth) * (1 - c01(p4)) * 0.9).toFixed(1)}px,0,0)`;
+      // cabeçalho e cards entram com a rolagem; o card mais próximo do centro da tela é o ativo
+      const rh = head.getBoundingClientRect(), th = reduce ? 1 : c01((vh * 0.92 - rh.top) / (vh * 0.35));
+      head.style.opacity = th.toFixed(3); head.style.translate = `0 ${((1 - th) * 40).toFixed(1)}px`;
+      let best = 0, bd = 1e9;
+      const refY = innerWidth < 900 ? (panel.parentElement.getBoundingClientRect().bottom + vh) / 2 : vh / 2;   // no celular o painel fica no topo
+      cards.forEach((c, i) => {
+        const r = c.getBoundingClientRect(), mid = r.top + r.height / 2, d = Math.abs(mid - refY);
+        if (d < bd) { bd = d; best = i; }
+        const t = reduce ? 1 : c01((vh * 0.95 - r.top) / (vh * 0.3));
+        c.style.opacity = (0.35 + 0.65 * t).toFixed(3); c.style.translate = `0 ${((1 - t) * 50).toFixed(1)}px`;
+      });
+      if (best !== active) {
+        active = best;
+        cards.forEach((c, i) => c.classList.toggle('on', i === best));
+        scenes.forEach((s, i) => s.classList.toggle('on', i === best));
+        dots.forEach((d, i) => d.classList.toggle('on', i === best));
+        num.textContent = String(best + 1).padStart(2, '0') + ' / ' + String(cards.length).padStart(2, '0'); name.textContent = names[best];
+      }
+      // o painel fixo inclina de leve conforme a rolagem (profundidade)
+      const target = reduce ? 0 : ((cards[best].getBoundingClientRect().top + cards[best].offsetHeight / 2 - refY) / vh);
+      sm += (target - sm) * 0.08;
+      panel.style.transform = `rotateY(${(-sm * 7).toFixed(2)}deg) rotateX(${(sm * 3).toFixed(2)}deg)`;
+      requestAnimationFrame(frame);
+    })();
+  }
+
+
+  /* ---------- dobras 6 e 7: processo em rolagem horizontal com cards em 3D; números com contadores ---------- */
+  function initFold67() {
+    const sec = $('#o6'), track = $('#o6-track'), prog = $('#o6-prog'), cards = $$('.o6c');
+    const o7 = $('#o7'), counters = $$('[data-count]'), bars = $$('.o7__bars i'), o7cards = $$('.o7c');
+    if (!sec || !track) return;
+    // dobra 6: o título recebe o "puxão" (o mesmo da palavra IMAGEM do hero); o laranja ganha uma luz que corre pelas letras
+    const t6 = $('.o6__title'), tag6 = $('.o6__tag');
+    const splitNode = (el) => {                                  // divide em letras mantendo <br> e <em>
+      const chars = [];
+      [...el.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const f = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((w) => {
+            if (!w) return;
+            if (/^\s+$/.test(w)) { f.appendChild(document.createTextNode(' ')); return; }
+            const ws = document.createElement('span'); ws.className = 'w';
+            [...w].forEach((ch) => { const c = document.createElement('span'); c.className = 'c'; c.textContent = ch; ws.appendChild(c); chars.push(c); });
+            f.appendChild(ws);
+          });
+          n.replaceWith(f);
+        } else if (n.nodeName === 'EM') chars.push(...splitNode(n));
+      });
+      return chars;
+    };
+    t6.setAttribute('aria-label', t6.textContent);
+    const lineA = [], lineB = []; let seenBr = false;
+    // separa em duas linhas (antes e depois do <br>) para o puxão correr linha por linha
+    const all6 = splitNode(t6); const br = t6.querySelector('br');
+    all6.forEach((c) => { (br && (br.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) ? lineB : lineA).push(c); });
+    const em6 = [...t6.querySelectorAll('em .c')]; em6.forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+    const groups6 = [{ chars: lineA, amp: 8 }, { chars: lineB, amp: 8 }];
+    if (tag6) groups6.push({ chars: splitNode(tag6), amp: 3 });
+    $$('.o6c h3').forEach((h) => groups6.push({ chars: splitNode(h), amp: 3 }));
+    let b6 = false;
+    const pull6 = () => {
+      if (b6 || reduce) return; b6 = true; t6.classList.add('glitching');
+      let total = 0;
+      groups6.forEach((g, gi) => g.chars.forEach((c, i) => {
+        if (!c.animate) return;
+        const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = gi * 120 + i * 12;
+        total = Math.max(total, delay + 420);
+        c.animate([
+          { translate: '0 0', scale: '1 1' },
+          { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+          { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+          { translate: '0 0', scale: '1 1' },
+        ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      }));
+      setTimeout(() => { t6.classList.remove('glitching'); b6 = false; }, total + 40);
+    };
+    if (!reduce) {
+      (function loop6() { setTimeout(() => { const r = sec.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pull6(); loop6(); }, 4500 + Math.random() * 3500); })();
+      t6.addEventListener('mouseenter', pull6);
+    }
+    // dobra 7: o mesmo "puxão" no título e a luz no laranja
+    const t7 = $('.o7__title'), tag7 = $('.o7__tag');
+    t7.setAttribute('aria-label', t7.textContent);
+    const all7 = splitNode(t7), br7 = t7.querySelector('br'), l7a = [], l7b = [];
+    all7.forEach((c) => { (br7 && (br7.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) ? l7b : l7a).push(c); });
+    [...t7.querySelectorAll('em .c')].forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+    const groups7 = [{ chars: l7a, amp: 8 }, { chars: l7b, amp: 8 }];
+    if (tag7) groups7.push({ chars: splitNode(tag7), amp: 3 });
+    $$('.o7c__k').forEach((k) => groups7.push({ chars: splitNode(k), amp: 3 }));
+    let b7 = false;
+    const pull7 = () => {
+      if (b7 || reduce) return; b7 = true; t7.classList.add('glitching');
+      let total = 0;
+      groups7.forEach((g, gi) => g.chars.forEach((c, i) => {
+        if (!c.animate) return;
+        const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = Math.min(gi, 8) * 120 + i * 12;
+        total = Math.max(total, delay + 420);
+        c.animate([
+          { translate: '0 0', scale: '1 1' },
+          { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+          { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+          { translate: '0 0', scale: '1 1' },
+        ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+      }));
+      setTimeout(() => { t7.classList.remove('glitching'); b7 = false; }, total + 40);
+    };
+    if (!reduce) {
+      (function loop7() { setTimeout(() => { const r = o7.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pull7(); loop7(); }, 4500 + Math.random() * 3500); })();
+      t7.addEventListener('mouseenter', pull7);
+    }
+    // números sobem de 0 até o valor e as barras do gráfico crescem junto; refaz toda vez que a dobra volta a aparecer
+    const fmt = (v) => Math.round(v).toLocaleString('pt-BR');
+    let cntTw = [];
+    const zero7 = () => { counters.forEach(el => { el.textContent = '0'; }); bars.forEach(b => { b.style.transform = 'scaleY(0)'; }); };
+    const run7 = () => {
+      cntTw.forEach(t => t.kill()); cntTw = [];
+      if (!G || reduce) { counters.forEach(el => { el.textContent = fmt(+el.dataset.count); }); bars.forEach(b => { b.style.transform = `scaleY(${parseFloat(b.style.getPropertyValue('--h'))})`; }); return; }
+      zero7();
+      counters.forEach((el, i) => { const to = +el.dataset.count, o = { v: 0 };
+        cntTw.push(G.to(o, { v: to, duration: 3.4, delay: 0.2 + i * 0.15, ease: 'power2.out', onUpdate: () => { el.textContent = fmt(o.v); }, onComplete: () => { el.textContent = fmt(to); } })); });
+      bars.forEach((b, i) => { const h = parseFloat(b.style.getPropertyValue('--h')), o = { v: 0 };
+        cntTw.push(G.to(o, { v: 1, duration: 2.8, delay: 0.2 + i * 0.11, ease: 'power3.out', onUpdate: () => { b.style.transform = `scaleY(${(o.v * h).toFixed(3)})`; } })); });
+    };
+    zero7();
+    const grid7 = $('.o7__grid');
+    if (grid7 && 'IntersectionObserver' in window) {
+      let seen7 = false;
+      new IntersectionObserver((es) => {
+        const vis = es[0].isIntersecting;
+        if (vis && !seen7) run7();
+        if (!vis) { cntTw.forEach(t => t.kill()); cntTw = []; zero7(); }
+        seen7 = vis;
+      }, { threshold: 0.3 }).observe(grid7);
+    } else run7();
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    let dist = 0, wide = false;
+    function size() {
+      wide = !reduce;
+      if (!wide) { sec.style.height = ''; track.style.transform = ''; cards.forEach(c => { c.style.transform = ''; c.style.opacity = ''; }); return; }
+      dist = Math.max(0, track.scrollWidth - innerWidth);
+      sec.style.height = Math.round(innerHeight + dist + innerHeight * 0.1) + 'px';
+    }
+    size(); addEventListener('resize', size); if (document.fonts && document.fonts.ready) document.fonts.ready.then(size);
+    let p = 0;
+    (function frame() {
+      const vh = innerHeight;
+      if (wide) {
+        const r = sec.getBoundingClientRect(), span = Math.max(1, sec.offsetHeight - vh);
+        const t = c01(-r.top / span); p += (t - p) * 0.12;
+        track.style.transform = `translate3d(${(-dist * p).toFixed(1)}px,0,0)`;
+        prog.style.transform = `scaleX(${p.toFixed(4)})`;
+        // a mira do destaque vai da esquerda para a direita, para o primeiro e o último cards também acenderem
+        let litC = null, litD = 1e9;
+        cards.forEach((c) => { const bb = c.getBoundingClientRect(), d = Math.abs(bb.left + bb.width / 2 - innerWidth * (0.27 + 0.45 * p)); if (bb.right > 0 && bb.left < innerWidth && d < litD) { litD = d; litC = c; } });
+        cards.forEach((c) => c.classList.toggle('lit', c === litC));
+        cards.forEach((c) => {
+          const b = c.getBoundingClientRect(), e = ss(0, 1, (innerWidth * 1.0 - b.left) / (innerWidth * 0.55));
+          c.style.transform = `perspective(1400px) translateZ(${((1 - e) * -160).toFixed(1)}px) rotateY(${((1 - e) * -28).toFixed(2)}deg)`;
+          c.style.opacity = (0.35 + 0.65 * e).toFixed(3);
+        });
+      }
+      // números: contam e as barras sobem quando entram na tela
+      const r7 = o7.getBoundingClientRect(), t7 = reduce ? 1 : ss(0, 1, (vh * 0.9 - r7.top) / (vh * 0.55));
+      o7cards.forEach((c, i) => { const t = reduce ? 1 : ss(0, 1, (vh * 0.95 - c.getBoundingClientRect().top) / (vh * 0.3)); c.style.opacity = (0.3 + 0.7 * t).toFixed(3); c.style.translate = `0 ${((1 - t) * 40).toFixed(1)}px`; });
+      requestAnimationFrame(frame);
+    })();
+  }
+
+
+  /* ---------- dobras 8 a 11: revelação pela rolagem, janela de busca, chamada final e voltar ao topo ---------- */
+  function initFold811() {
+    const rvs = $$('[data-rv]'), win = $('#o8-win'), res = $$('#o8-res b'), scan = $('#o8-scan') || { style: {} }, badge = $('#o8-badge') || { style: {} }, big = $$('#o11-big > span'), top = $('#ft-top');
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    // dobra 8: o mesmo "puxão" nos textos e a luz no laranja
+    const splitNode8 = (el) => {
+      const chars = [];
+      [...el.childNodes].forEach((n) => {
+        if (n.nodeType === 3) {
+          const f = document.createDocumentFragment();
+          n.textContent.split(/(\s+)/).forEach((w) => {
+            if (!w) return;
+            if (/^\s+$/.test(w)) { f.appendChild(document.createTextNode(' ')); return; }
+            const ws = document.createElement('span'); ws.className = 'w';
+            [...w].forEach((ch) => { const c = document.createElement('span'); c.className = 'c'; c.textContent = ch; ws.appendChild(c); chars.push(c); });
+            f.appendChild(ws);
+          });
+          n.replaceWith(f);
+        } else if (n.nodeName === 'EM') chars.push(...splitNode8(n));
+      });
+      return chars;
+    };
+    const t8 = $('#o8 .tt'), o8sec = $('#o8');
+    if (t8) {
+      t8.setAttribute('aria-label', t8.textContent);
+      const all8 = splitNode8(t8), br8 = t8.querySelector('br'), l8a = [], l8b = [];
+      all8.forEach((c) => { (br8 && (br8.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) ? l8b : l8a).push(c); });
+      [...t8.querySelectorAll('em .c')].forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+      const groups8 = [{ chars: l8a, amp: 8 }, { chars: l8b, amp: 8 }];
+      const tg8 = $('#o8 .tg'); if (tg8) groups8.push({ chars: splitNode8(tg8), amp: 3 });
+      $$('#o8 .o8__checks li').forEach((li) => groups8.push({ chars: splitNode8(li), amp: 3 }));
+      let b8 = false;
+      const pull8 = () => {
+        if (b8 || reduce) return; b8 = true; t8.classList.add('glitching');
+        let total = 0;
+        groups8.forEach((g, gi) => g.chars.forEach((c, i) => {
+          if (!c.animate) return;
+          const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = gi * 120 + i * 12;
+          total = Math.max(total, delay + 420);
+          c.animate([
+            { translate: '0 0', scale: '1 1' },
+            { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+            { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+            { translate: '0 0', scale: '1 1' },
+          ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+        }));
+        setTimeout(() => { t8.classList.remove('glitching'); b8 = false; }, total + 40);
+      };
+      if (!reduce) {
+        (function loop8() { setTimeout(() => { const r = o8sec.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pull8(); loop8(); }, 4500 + Math.random() * 3500); })();
+        t8.addEventListener('mouseenter', pull8);
+      }
+    }
+    // dobra 9 (planos): puxada e luz nos textos; preços sobem de 0 até o valor; os cards se embaralham ao chegar e o Pro fica "pulando"
+    const t9 = $('#o9 .hd .tt'), o9sec = $('#o9');
+    if (t9) {
+      t9.setAttribute('aria-label', t9.textContent);
+      const all9 = splitNode8(t9), br9 = t9.querySelector('br'), l9a = [], l9b = [];
+      all9.forEach((c) => { (br9 && (br9.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) ? l9b : l9a).push(c); });
+      [...t9.querySelectorAll('em .c')].forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+      const groups9 = [{ chars: l9a, amp: 8 }, { chars: l9b, amp: 8 }];
+      const tg9 = $('#o9 .hd .tg'); if (tg9) groups9.push({ chars: splitNode8(tg9), amp: 3 });
+      $$('#o9 .pl__k').forEach((k) => groups9.push({ chars: splitNode8(k), amp: 3 }));
+      let b9 = false;
+      const pull9 = () => {
+        if (b9 || reduce) return; b9 = true; t9.classList.add('glitching');
+        let total = 0;
+        groups9.forEach((g, gi) => g.chars.forEach((c, i) => {
+          if (!c.animate) return;
+          const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = gi * 120 + i * 12;
+          total = Math.max(total, delay + 420);
+          c.animate([
+            { translate: '0 0', scale: '1 1' },
+            { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+            { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+            { translate: '0 0', scale: '1 1' },
+          ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+        }));
+        setTimeout(() => { t9.classList.remove('glitching'); b9 = false; }, total + 40);
+      };
+      if (!reduce) {
+        (function loop9() { setTimeout(() => { const r = o9sec.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pull9(); loop9(); }, 4500 + Math.random() * 3500); })();
+        t9.addEventListener('mouseenter', pull9);
+      }
+    }
+    const plans = $$('#o9 .pl'), prices = $$('#o9 [data-price]'), hot = $('#o9 .pl--hot'), grid9 = $('#o9 .o9__grid');
+    let tl9 = null, bounce9 = null, priceTw = [];
+    const setPrices = (zero) => prices.forEach((el) => { el.textContent = zero ? '0' : el.dataset.price; });
+    const stop9 = () => { if (tl9) tl9.kill(); if (bounce9) bounce9.kill(); priceTw.forEach((t) => t.kill()); tl9 = bounce9 = null; priceTw = []; if (G) G.set(plans, { clearProps: 'transform,zIndex' }); };
+    const shuffle9 = () => {
+      stop9();
+      if (!G || reduce) { setPrices(false); return; }
+      setPrices(true);
+      const rs = plans.map((p) => { const b = p.getBoundingClientRect(); return { x: b.left, y: b.top }; }), dx = (i, sl) => rs[sl].x - rs[i].x, dy = (i, sl) => rs[sl].y - rs[i].y;
+      G.set(plans, { x: (i) => dx(i, 1), y: (i) => dy(i, 1), rotation: (i) => (i - 1) * 7, scale: 0.94, zIndex: (i) => 3 - i });
+      const perms = [[1, 2, 0], [2, 0, 1], [1, 0, 2], [0, 1, 2]];
+      tl9 = G.timeline({ onComplete: () => {
+        if (hot) bounce9 = G.timeline({ repeat: -1, repeatDelay: 1.1 }).to(hot, { y: -14, duration: 0.3, ease: 'power2.out' }).to(hot, { y: 0, duration: 0.7, ease: 'bounce.out' });
+      } });
+      perms.forEach((perm, k) => {
+        const last = k === perms.length - 1;
+        tl9.to(plans, { x: (i) => dx(i, perm[i]), y: (i) => dy(i, perm[i]) + (last ? 0 : (i % 2 ? -22 : 22)), rotation: (i) => (last ? 0 : (i % 2 ? 5 : -5)), scale: last ? 1 : 0.97,
+          duration: last ? 0.6 : 0.4, ease: last ? 'back.out(1.6)' : 'power2.inOut', stagger: last ? 0.05 : 0, zIndex: (i) => (perm[i] === 1 ? 4 : 2 + (perm[i] === 0 ? 1 : 0)) }, k === 0 ? 0 : '>');
+      });
+      prices.forEach((el, i) => { const to = +el.dataset.price, o = { v: 0 };
+        priceTw.push(G.to(o, { v: to, duration: 2.4, delay: 0.7 + i * 0.15, ease: 'power2.out', onUpdate: () => { el.textContent = String(Math.round(o.v)); }, onComplete: () => { el.textContent = String(to); } })); });
+    };
+    if (grid9 && 'IntersectionObserver' in window) {
+      let seen9 = false;
+      new IntersectionObserver((es) => {
+        const vis = es[0].isIntersecting;
+        if (vis && !seen9) shuffle9();
+        if (!vis) { stop9(); setPrices(true); }
+        seen9 = vis;
+      }, { threshold: innerWidth < 1024 ? 0.12 : 0.35 }).observe(grid9);
+    }
+    // dobra 10 (novidades): puxada e luz nos textos
+    const t10 = $('#o10 .hd .tt'), o10sec = $('#o10');
+    if (t10) {
+      t10.setAttribute('aria-label', t10.textContent);
+      const all10 = splitNode8(t10), br10 = t10.querySelector('br'), l10a = [], l10b = [];
+      all10.forEach((c) => { (br10 && (br10.compareDocumentPosition(c) & Node.DOCUMENT_POSITION_FOLLOWING) ? l10b : l10a).push(c); });
+      [...t10.querySelectorAll('em .c')].forEach((c, i) => { c.style.animationDelay = (i * 0.07).toFixed(2) + 's'; });
+      const groups10 = [{ chars: l10a, amp: 8 }, { chars: l10b, amp: 8 }];
+      const tg10 = $('#o10 .hd .tg'); if (tg10) groups10.push({ chars: splitNode8(tg10), amp: 3 });
+      $$('#o10 .pt__m').forEach((k) => groups10.push({ chars: splitNode8(k), amp: 3 }));
+      $$('#o10 .pt h3').forEach((k) => groups10.push({ chars: splitNode8(k), amp: 3 }));
+      let b10 = false;
+      const pull10 = () => {
+        if (b10 || reduce) return; b10 = true; t10.classList.add('glitching');
+        let total = 0;
+        groups10.forEach((g, gi) => g.chars.forEach((c, i) => {
+          if (!c.animate) return;
+          const k = g.chars.length > 1 ? i / (g.chars.length - 1) : 0, delay = Math.min(gi, 10) * 110 + i * 12;
+          total = Math.max(total, delay + 420);
+          c.animate([
+            { translate: '0 0', scale: '1 1' },
+            { translate: `${(0.8 + k * g.amp).toFixed(1)}px 0`, scale: '1.03 1', offset: 0.32 },
+            { translate: '-0.6px 0', scale: '0.995 1', offset: 0.62 },
+            { translate: '0 0', scale: '1 1' },
+          ], { duration: 420, delay, easing: 'cubic-bezier(.22,.8,.3,1)' });
+        }));
+        setTimeout(() => { t10.classList.remove('glitching'); b10 = false; }, total + 40);
+      };
+      if (!reduce) {
+        (function loop10() { setTimeout(() => { const r = o10sec.getBoundingClientRect(); if (r.top < innerHeight * 0.5 && r.bottom > innerHeight * 0.5) pull10(); loop10(); }, 4500 + Math.random() * 3500); })();
+        t10.addEventListener('mouseenter', pull10);
+      }
+    }
+    if (top) top.addEventListener('click', () => { if (window.__lenis) window.__lenis.scrollTo(0, { duration: 1.8 }); else scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); });
+    rvs.forEach(el => { const o = $$('[data-rv]').indexOf(el); el._d = (o % 3) * 0.06; });
+    (function frame() {
+      const vh = innerHeight;
+      rvs.forEach((el) => {
+        const t = reduce ? 1 : ss(0, 1, (vh * 0.96 - el.getBoundingClientRect().top) / (vh * 0.3) - el._d * 3);
+        el.style.opacity = (0.0 + t).toFixed(3); el.style.translate = `0 ${((1 - t) * 46).toFixed(1)}px`;
+      });
+      if (win) {
+        const r = win.getBoundingClientRect(), p = reduce ? 1 : c01((vh * 0.9 - r.top) / (vh * 0.7));
+        const wp = ss(0, 1, p), wo = reduce ? 1 : ss(0.02, 0.55, p);     // o quadro só aparece quando a rolagem chega na dobra
+        win.style.opacity = wo.toFixed(3);
+        win.style.transform = `perspective(1400px) rotateY(${((1 - wp) * -9).toFixed(2)}deg) translateY(${((1 - wp) * 70).toFixed(1)}px) scale(${(0.94 + 0.06 * wp).toFixed(3)})`;
+        res.forEach((b, i) => { const t = ss(0, 1, p * 1.7 - 0.4 - i * 0.14); b.style.opacity = t.toFixed(3); b.style.transform = `scale(${(0.86 + 0.14 * t).toFixed(3)})`; });
+        const sp = c01((p - 0.1) / 0.5); scan.style.opacity = (Math.sin(Math.PI * sp) * 1).toFixed(3); scan.style.top = (sp * 100).toFixed(1) + '%';
+        const tb = ss(0.75, 0.95, p); badge.style.opacity = tb.toFixed(3); badge.style.transform = `translateY(${((1 - tb) * 14).toFixed(1)}px) scale(${(0.9 + 0.1 * tb).toFixed(3)})`;
+      }
+      big.forEach((l, i) => {
+        const t = reduce ? 1 : ss(0, 1, (vh * 0.92 - l.getBoundingClientRect().top) / (vh * 0.4) - i * 0.25);
+        l.style.opacity = t.toFixed(3); l.style.transform = `translateX(${((1 - t) * -80).toFixed(1)}px)`;
+      });
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  /* ---------- efeito de pixels em todas as dobras: cada bloco se monta em pixels ao entrar na tela e se desmonta ao sair ---------- */
+  function initPixelAll() {
+    if (reduce) return;
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
+    const sel = [
+      ['#o4', 'v'],
+      ['.o5__tag', 'v'], ['.o5__title', 'v'], ['.o5__lead', 'v'], ['.o5c', 'v'], ['#o5-panel', 'v'],
+      ['.o6__tag', 'v'], ['.o6__title', 'v'], ['.o6c', 'h'],
+      ['.o7__tag', 'v'], ['.o7__title', 'v'], ['.o7__lead', 'v'], ['.o7c', 'v'],
+      ['.o8 [data-rv]', 'v'], ['#o8-win', 'v'],
+      ['.o9 .hd', 'v'], ['.pl', 'v'], ['.o10 .hd', 'v'], ['.pt', 'v'],
+      ['.o11__big', 'v'], ['.o11__row', 'v'], ['.ft', 'v'],
+    ];
+    const items = [];
+    sel.forEach(([q, axis]) => $$(q).forEach((el) => items.push({ el, axis, p: pixel(el) })));
+    (function frame() {
+      const vh = innerHeight, vw = innerWidth;
+      for (const it of items) {
+        const r = it.el.getBoundingClientRect();
+        let tIn, tOut;
+        if (it.axis === 'h' && vw >= 1024) { tIn = ss(0, 1, (vw * 0.98 - r.left) / (vw * 0.4)); tOut = c01((r.right - vw * 0.02) / (vw * 0.28)); }
+        else { tIn = ss(0, 1, (vh * 0.97 - r.top) / (vh * 0.3)); tOut = c01(r.bottom / (vh * 0.26)); }
+        if (r.bottom < -40 || r.top > vh + 40) { it.p.set(0); continue; }
+        it.p.set(Math.min(tIn, tOut));
+      }
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  /* ---------- botões com função: rolagem suave, janelas (começar, serviços, artigos), planos, e-mail e newsletter ---------- */
+  function initActions() {
+    const L = () => window.__lenis;
+    const goTo = (target, off) => {
+      const el = typeof target === 'string' ? $(target) : target; if (!el) return;
+      const o = off === undefined ? -24 : off;
+      if (L()) L().scrollTo(el, { offset: o, duration: reduce ? 0 : 1.5 });
+      else el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+    };
+    const goTop = () => { if (L()) L().scrollTo(0, { duration: reduce ? 0 : 1.6 }); else scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' }); };
+    const store = (key, item) => { try { const l = JSON.parse(localStorage.getItem(key) || '[]'); l.push(item); localStorage.setItem(key, JSON.stringify(l)); } catch (e) { /* sem armazenamento */ } };
+    const okMail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+    // aviso rápido
+    const toast = $('#toast'); let toastT = 0;
+    const showToast = (msg) => { toast.textContent = msg; toast.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('on'), 3800); };
+
+    // janela modal
+    const md = $('#md'), mc = $('#md-c'); let lastFocus = null;
+    const closeModal = () => { if (!md.classList.contains('on')) return; md.classList.remove('on'); md.setAttribute('aria-hidden', 'true'); if (L()) L().start(); if (lastFocus && lastFocus.focus) lastFocus.focus(); };
+    const openModal = (html, focusSel) => {
+      lastFocus = document.activeElement; mc.innerHTML = html; md.classList.add('on'); md.setAttribute('aria-hidden', 'false'); if (L()) L().stop();
+      setTimeout(() => { const f = (focusSel && $(focusSel, md)) || $('.md__x', md); if (f) f.focus(); }, 80);
+    };
+    md.addEventListener('click', (e) => { if (e.target === md || e.target.closest('.md__x')) closeModal(); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+    md.setAttribute('data-lenis-prevent', '');
+
+    // 1) Começar agora (cadastro): guarda no navegador e confirma
+    const signup = (plan) => {
+      openModal(`<span class="md__k">Começar agora</span><h3 id="md-t">Vamos montar a sua biblioteca</h3>
+        <p>Deixe seu nome e e-mail e o plano que tem mais a ver com você. Avisamos assim que o app estiver pronto para você começar.</p>
+        <form id="su-form" novalidate>
+          <label>Nome<input name="nome" autocomplete="name" placeholder="Seu nome"></label>
+          <label>E-mail<input name="email" type="email" autocomplete="email" placeholder="voce@email.com"></label>
+          <label>Plano<select name="plano"><option>Essencial</option><option>Pro</option><option>Estúdio</option></select></label>
+          <p class="err" id="su-err" aria-live="polite"></p>
+          <button class="pill pill--fill" type="submit">Enviar <span aria-hidden="true">→</span></button>
+        </form>`, '#su-form input[name=nome]');
+      const f = $('#su-form'); if (plan) f.plano.value = plan;
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nome = f.nome.value.trim(), email = f.email.value.trim(), err = $('#su-err');
+        if (nome.length < 2) { err.textContent = 'Digite o seu nome.'; f.nome.focus(); return; }
+        if (!okMail(email)) { err.textContent = 'Digite um e-mail válido.'; f.email.focus(); return; }
+        store('ultron_cadastros', { nome, email, plano: f.plano.value, em: new Date().toISOString() });
+        mc.innerHTML = `<span class="md__ok" aria-hidden="true">✓</span><h3 id="md-t">Tudo certo, ${esc(nome.split(' ')[0])}!</h3><p>Recebemos o seu interesse no plano <b>${esc(f.plano.value)}</b>. Vamos falar com você em <b>${esc(email)}</b>.</p><button class="pill pill--fill" type="button" id="md-done">Fechar</button>`;
+        $('#md-done').addEventListener('click', closeModal); $('#md-done').focus();
+      });
+    };
+
+    // 2) Saiba mais dos serviços: janela com os detalhes do card
+    const o5cards = $$('.o5c');
+    const service = (i) => {
+      const c = o5cards[i]; if (!c) return;
+      openModal(`<span class="md__k">${esc($('.o5c__n', c).textContent)} · O que a Ultron faz</span><h3 id="md-t">${esc($('h3', c).textContent)}</h3><p>${esc($('p', c).textContent)}</p><ul>${$$('li', c).map((li) => `<li><b>${esc($('b', li).textContent)}</b>${esc(li.textContent.replace($('b', li).textContent, '').trim())}</li>`).join('')}</ul>
+        <button class="pill pill--fill" type="button" id="md-go">Começar agora <span aria-hidden="true">→</span></button>`);
+      $('#md-go').addEventListener('click', () => signup());
+    };
+
+    // 3) Artigos (a leitura abre numa janela)
+    const ARTS = [
+      { m: 'Organização · 5 min de leitura', t: 'Como organizar mil referências sem perder o fio', img: 'ASSETS/img/dobra-10-artigos/artigo-organizar.webp', p: ['Quando a pasta de referências passa de algumas centenas de arquivos, o problema deixa de ser guardar e passa a ser reencontrar. O primeiro passo é parar de depender do nome do arquivo.', 'Use prévias grandes, poucas categorias e tags que descrevem o que você vê: cor, estilo, material. Assim a busca acompanha o seu olhar, não a sua memória.', 'Por fim, deixe a organização acontecer sozinha: uma pasta monitorada recebe tudo o que chega e a biblioteca se atualiza sem você mover nada.'] },
+      { m: 'Design system · 7 min de leitura', t: 'Da referência ao design system em quatro passos', img: 'ASSETS/img/dobra-10-artigos/artigo-design.webp', p: ['Uma boa referência já traz um design system escondido: cores, tipografia, componentes e espaçamentos que se repetem.', 'O caminho é simples: escolher a referência, extrair a paleta, identificar as fontes e salvar os componentes que você vai reaproveitar.', 'Com tudo guardado no mesmo lugar, o próximo projeto começa pronto em vez de começar do zero.'] },
+      { m: 'Fluxo de trabalho · 4 min de leitura', t: 'Pasta monitorada: o fim dos arquivos esquecidos', img: 'ASSETS/img/dobra-10-artigos/artigo-pasta.webp', p: ['Downloads, projetos antigos, capturas de tela: boas referências ficam espalhadas e acabam esquecidas.', 'Com uma pasta monitorada, tudo o que cai ali entra na biblioteca em tempo real, com prévia e etiqueta de novo.', 'Seus arquivos continuam onde estão. A Ultron só os organiza e os mostra do jeito certo.'] },
+      { m: 'Organização · 4 min de leitura', t: 'Tags que realmente ajudam a encontrar', img: 'ASSETS/img/dobra-10-artigos/artigo-tags.webp', p: ['Tags demais atrapalham tanto quanto tags de menos. O segredo é escolher poucas e usar sempre as mesmas.', 'Prefira palavras que descrevem o que a imagem mostra, não o projeto em que você a usou: material, cor, estilo, objeto.', 'Quando a tag certa falha, a busca por imagem encontra os parecidos pelo visual.'] },
+      { m: 'Design system · 6 min de leitura', t: 'Paletas de cor direto da referência', img: 'ASSETS/img/dobra-10-artigos/artigo-paletas.webp', p: ['Extrair a paleta de uma referência evita o chute: você parte das cores que já funcionaram.', 'Separe uma cor principal, uma de apoio, dois neutros e um tom de destaque. Cinco cores bem escolhidas resolvem a maior parte dos projetos.', 'Salve a paleta junto da referência para poder voltar a ela quando quiser.'] },
+      { m: 'Equipes · 5 min de leitura', t: 'Biblioteca em equipe: boas práticas', img: 'ASSETS/img/dobra-10-artigos/artigo-equipe.webp', p: ['Quando várias pessoas usam a mesma biblioteca, combinar poucas regras vale mais que muitas pastas.', 'Defina quem cria coleções, como nomear e quais tags são oficiais. Revise de tempos em tempos para a biblioteca não virar um depósito.', 'Com tudo no mesmo lugar, a equipe para de perguntar onde está aquela referência.'] },
+    ];
+    const pts = $$('.pt');
+    const article = (i) => {
+      const a = ARTS[i]; if (!a) return;
+      openModal(`${a.img ? `<img class="md__img" src="${a.img}" alt="">` : ''}<span class="md__k">${esc(a.m)}</span><h3 id="md-t">${esc(a.t)}</h3>${a.p.map((t) => `<p>${esc(t)}</p>`).join('')}
+        <button class="pill pill--fill" type="button" id="md-go">Começar agora <span aria-hidden="true">→</span></button>`);
+      $('#md-go').addEventListener('click', () => signup());
+    };
+    const allBtn = $('#o10-all'), grid10 = $('.o10__grid');
+    const toggleArts = () => {
+      const open = grid10.classList.toggle('expanded');
+      allBtn.firstChild.textContent = open ? 'Ver menos ' : 'Ver todos os artigos ';
+      if (open) setTimeout(() => goTo(pts[3], -60), 120);
+    };
+
+    // 4) marca cada botão com a sua ação
+    $$('a[href="#comecar"], .menu').forEach((a) => { a.dataset.act = 'signup'; });
+    o5cards.forEach((c, i) => { const a = $('a', c); if (a) { a.dataset.act = 'service'; a.dataset.i = i; } });
+    $$('.o3c__go').forEach((a, i) => { a.dataset.act = 'card'; a.dataset.i = [0, 0, 1, 3][i]; });
+    $$('.pl .pill').forEach((a) => { a.dataset.act = 'plan'; a.dataset.plan = $('.pl__k', a.closest('.pl')).textContent.trim(); });
+    pts.forEach((a, i) => { a.dataset.act = 'article'; a.dataset.i = i; });
+    if (allBtn) allBtn.dataset.act = 'more';
+    const rec = $$('.ft div:nth-child(3) a'); [0, 1, null, 3].forEach((n, k) => { if (rec[k] && n !== null) { rec[k].dataset.act = 'card'; rec[k].dataset.i = n; } });
+
+    const ANCH = { '#top': '#top', '#como-funciona': '#o6' };
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a, button'); if (!a || a.closest('#md')) return;
+      const act = a.dataset.act;
+      if (act === 'signup') { e.preventDefault(); signup(); return; }
+      if (act === 'service') { e.preventDefault(); service(+a.dataset.i); return; }
+      if (act === 'card') { e.preventDefault(); goTo(o5cards[+a.dataset.i], -Math.max(0, (innerHeight - o5cards[+a.dataset.i].offsetHeight) / 2)); return; }
+      if (act === 'plan') { e.preventDefault(); signup(a.dataset.plan); return; }
+      if (act === 'article') { e.preventDefault(); article(+a.dataset.i); return; }
+      if (act === 'more') { e.preventDefault(); toggleArts(); return; }
+      const href = a.getAttribute && a.getAttribute('href');
+      if (href && href.startsWith('#') && href.length > 1) {
+        e.preventDefault();
+        if (href === '#top') { goTop(); return; }
+        const t = ANCH[href] || href;
+        if ($(t)) goTo(t, t === '#o6' ? 0 : -24);
+      } else if (href === '#top') { e.preventDefault(); goTop(); }
+    });
+
+    // 5) newsletter do rodapé
+    const news = $('.ft__news');
+    if (news) news.addEventListener('submit', (e) => {
+      e.preventDefault(); const inp = $('input', news), v = inp.value.trim();
+      if (!okMail(v)) { showToast('Digite um e-mail válido para assinar.'); inp.focus(); return; }
+      store('ultron_newsletter', { email: v, em: new Date().toISOString() }); inp.value = ''; showToast('Pronto! Vamos enviar as novidades para ' + v + '.');
+    });
+
+    // 6) o link do cabeçalho acompanha a seção que está na tela
+    const spy = [['#top', 'top'], ['#o5', 'o5'], ['#o6', 'o6'], ['#o9', 'o9'], ['#o10', 'o10'], ['#o11', 'o11']];
+    const navLinks = $$('.topnav nav a');
+    (function spyLoop() {
+      let cur = 0; const mid = innerHeight * 0.4;
+      spy.forEach(([h], i) => { const el = h === '#top' ? $('#top') : $(h); if (el && el.getBoundingClientRect().top <= mid) cur = i; });
+      navLinks.forEach((l) => l.classList.toggle('is-on', l.getAttribute('href') === spy[cur][0]));
+      setTimeout(spyLoop, 250);
+    })();
+  }
+
+  /* ---------- desintegração em laranja: os itens que saem pelo topo da tela se desfazem em manchas, com uma brasa laranja na borda ---------- */
+  function initDissolve() {
+    if (reduce) return;
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('aria-hidden', 'true'); svg.style.cssText = 'position:absolute;width:0;height:0;pointer-events:none';
+    const defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); document.body.appendChild(svg);
+    const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+    let uid = 0;
+    const c01 = (n) => Math.max(0, Math.min(1, n));
+    const make = (el) => {
+      let built = false, last = -1, id = '', mA, mB;
+      const build = () => {
+        built = true; id = 'ds' + (uid++);
+        const f = mk('filter', { id, x: '-6%', y: '-6%', width: '112%', height: '112%', 'color-interpolation-filters': 'sRGB' }, defs);
+        mk('feTurbulence', { type: 'fractalNoise', baseFrequency: '0.02 0.034', numOctaves: '2', seed: String((uid * 7) % 90 + 1), result: 'n' }, f);
+        mA = mk('feColorMatrix', { in: 'n', type: 'matrix', values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 28 0 0 0 0', result: 'mA' }, f);
+        mB = mk('feColorMatrix', { in: 'n', type: 'matrix', values: '0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 28 0 0 0 0', result: 'mB' }, f);
+        mk('feComposite', { in: 'SourceGraphic', in2: 'mB', operator: 'in', result: 'body' }, f);
+        mk('feComposite', { in: 'mA', in2: 'mB', operator: 'out', result: 'edgeM' }, f);
+        mk('feFlood', { 'flood-color': '#FF5A00', 'flood-opacity': '1', result: 'fl' }, f);
+        mk('feComposite', { in: 'fl', in2: 'edgeM', operator: 'in', result: 'edgeC' }, f);
+        mk('feGaussianBlur', { in: 'edgeC', stdDeviation: '1.6', result: 'glow' }, f);
+        mk('feComposite', { in: 'glow', in2: 'SourceAlpha', operator: 'in', result: 'glowS' }, f);
+        const m = mk('feMerge', {}, f); mk('feMergeNode', { in: 'body' }, m); mk('feMergeNode', { in: 'glowS' }, m);
+      };
+      return {
+        set(p) {
+          const key = Math.round(c01(p) * 70);
+          if (key === last) return; last = key;
+          if (key <= 0) { el.style.filter = ''; return; }
+          if (!built) build();
+          const thr = 0.18 + 0.7 * (key / 70);
+          mA.setAttribute('values', `0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 28 0 0 0 ${(-28 * thr).toFixed(2)}`);
+          mB.setAttribute('values', `0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 28 0 0 0 ${(-28 * (thr + 0.07)).toFixed(2)}`);
+          el.style.filter = `url(#${id})`;
+        },
+      };
+    };
+    const sel = [
+      ['#hero-eyebrow', 'v'], ['#hero-title', 'v'], ['#hero-lead', 'v'], ['#hero-cta', 'v'], ['#hero-stats', 'v'],
+      ['.o2__copy', 'v'], ['#o2-call', 'v'],
+      ['.o3__head', 'v'], ['.o3c', 'v'],
+      ['#o4', 'v'],
+      ['.o5__head', 'v'], ['.o5c', 'v'], ['#o5-panel', 'v'],
+      ['.o6__head', 'v'], ['.o6c', 'h'],
+      ['.o7__head', 'v'], ['.o7c', 'v'],
+      ['.o8__grid > div', 'v'],
+      ['.o9 .hd', 'v'], ['.pl', 'v'], ['.o10 .hd', 'v'], ['.pt', 'v'],
+      ['.o11__cta', 'v'],
+    ];
+    const items = [];
+    sel.forEach(([q, axis]) => $$(q).forEach((el) => items.push({ el, axis, d: make(el), on: false })));
+    (function frame() {
+      const vh = innerHeight, vw = innerWidth;
+      for (const it of items) {
+        const r = it.el.getBoundingClientRect();
+        let p = 0;
+        if (it.axis === 'h' && vw >= 1024) p = 1 - c01((r.right - vw * 0.02) / (vw * 0.2));
+        else if (r.height > 0 && scrollY > 8) p = 1 - c01(r.bottom / (vh * 0.14));     // só quando o item está de fato saindo pelo topo (nunca no topo da página)
+        if (p <= 0 && !it.on) continue;
+        it.d.set(p); it.on = p > 0;
+      }
+      requestAnimationFrame(frame);
+    })();
+  }
+
+  /* ---------- menu do celular ---------- */
+  function initMenu() {
+    const b = $('#burger'), m = $('#mnav'); if (!b || !m) return;
+    const root = document.documentElement;
+    const set = (on) => {
+      root.classList.toggle('is-menu', on); b.setAttribute('aria-expanded', String(on)); b.setAttribute('aria-label', on ? 'Fechar menu' : 'Abrir menu'); m.setAttribute('aria-hidden', String(!on));
+      if (window.__lenis) { if (on) window.__lenis.stop(); else window.__lenis.start(); }
+      document.body.style.overflow = on ? 'hidden' : '';
+    };
+    b.addEventListener('click', () => set(!root.classList.contains('is-menu')));
+    m.addEventListener('click', (e) => { if (e.target.closest('a')) set(false); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+    addEventListener('resize', () => { if (innerWidth > 960) set(false); });
+    const links = $$('a', m), spy = ['#top', '#o5', '#o6', '#o9', '#o10', '#o11'];
+    (function loop() {
+      if (root.classList.contains('is-menu')) {
+        let cur = 0; const mid = innerHeight * 0.4;
+        spy.forEach((h, i) => { const el = $(h); if (el && el.getBoundingClientRect().top <= mid) cur = i; });
+        links.forEach((l) => l.classList.toggle('is-on', l.getAttribute('href') === spy[cur]));
+      }
+      setTimeout(loop, 300);
+    })();
+  }
+
+  initHeader();
+  initMenu();
+  initFold45();
+  initFold67();
+  initFold811();
+  initActions();
+  initDissolve();
+  initOrbFold();
+  initFold3();
+  boot();
+})();
+</script>
+</body>
+</html>

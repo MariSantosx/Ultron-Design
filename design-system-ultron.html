@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dala Design System</title>
+<meta name="description" content="Design system extraído de dala.craftedbygc.com: cores, tipografia, espaçamento, raios, movimento, animações GSAP, componentes e a cena 3D.">
+<link rel="icon" href="dala-d.png">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+/* =========================================================
+   DALA DESIGN SYSTEM — tokens extraídos
+   Fonte: dala.craftedbygc.com (cópia local em REFERÊNCIAS)
+   ========================================================= */
+@font-face{font-family:PPNeueMontreal;font-weight:200;font-display:swap;src:url(ASSETS/fonts/PPNeueMontreal-Light.woff2) format("woff2")}
+@font-face{font-family:PPNeueMontreal;font-weight:400;font-display:swap;src:url(ASSETS/fonts/PPNeueMontreal-Regular.woff2) format("woff2")}
+@font-face{font-family:PPNeueMontreal;font-weight:600;font-display:swap;src:url(ASSETS/fonts/PPNeueMontreal-SemiBold.woff2) format("woff2")}
+
+:root{
+  /* COLORS — base */
+  --color-bg:#000000;
+  --color-surface:#070707;
+  --color-surface-2:#2F2F2F;
+  --color-surface-3:#3D424E;
+  --color-text:#FFFFFF;
+  --color-text-muted:#9A9A9A;
+  --color-text-subtle:#BDBDBD;
+  --color-light:#E9E9E9;
+  --color-border:rgba(255,255,255,.1);
+
+  /* COLORS — marca */
+  --color-accent:#FF6B00;
+  --color-accent-light:#FFE1CC;
+  --color-highlight:#FFB829;
+  --color-green:#189B81;
+  --color-hover:#D95B00;
+
+  /* COLORS — partículas (textura do cérebro 3D) */
+  --particle-amber:#C08000;
+  --particle-violet:#B04900;   /* original #5000B0, recolorido para laranja */
+  --particle-green:#007040;
+  --particle-teal:#006070;
+  --particle-dust:#B0A0B0;
+
+  /* COLORS — pirâmides soltas na frente da câmera */
+  --front-violet:#B8500F;   /* original #5D399A */
+  --front-amber:#BA882B;
+  --front-green:#287464;
+  --front-lilac:#C9A58C;    /* original #A494AF */
+
+  /* COLORS — social */
+  --color-twitter:#1DA1F2;
+  --color-linkedin:#2867B2;
+
+  /* TYPOGRAPHY */
+  --font-sans:PPNeueMontreal,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --fw-light:200;
+  --fw-regular:400;
+  --fw-semibold:600;
+  --lh-tight:.9;
+  --lh-snug:1.1;
+  --lh-heading:1.2;
+  --lh-body:1.5;
+  --ls-display:-.04em;
+  --ls-label:.025em;
+  --ls-label-wide:.05em;
+
+  /* SPACING — base 8px */
+  --space-1:.375rem;  /* 6  */
+  --space-2:.75rem;   /* 12 */
+  --space-3:1rem;     /* 16 */
+  --space-4:1.5rem;   /* 24 */
+  --space-5:2rem;     /* 32 — gutter do grid */
+  --space-6:3rem;     /* 48 */
+  --space-7:4.5rem;   /* 72 */
+  --space-8:7.5rem;   /* 120 */
+
+  /* RADIUS */
+  --radius-sm:10px;
+  --radius-btn:1.875rem;
+  --radius-card:2rem;
+  --radius-pill:50px;
+  --radius-round:50%;
+
+  /* EFFECTS */
+  --blur-glass:blur(20px);
+  --glass-bg:linear-gradient(0deg,rgba(0,0,0,.5),rgba(0,0,0,.1));
+  --glass-bg-strong:linear-gradient(0deg,rgba(0,0,0,.8),rgba(0,0,0,.9));
+  --shadow-glow:0 0 32px rgba(255,107,0,.45);
+  --image-dim:grayscale(1) brightness(.1);
+
+  /* MOTION — CSS */
+  --ease-out-quart:cubic-bezier(.25,1,.5,1);
+  --ease-out-soft:cubic-bezier(.5,1,.89,1);
+  --ease-out-expo:cubic-bezier(.19,1,.22,1);
+  --ease-out-cubic:cubic-bezier(.215,.61,.355,1);
+  --ease-in-out:cubic-bezier(.76,0,.24,1);
+  --dur-fast:.3s;
+  --dur-base:.5s;
+  --dur-slow:.6s;
+  --dur-reveal:1.1s;
+
+  /* MOTION — GSAP (equivalentes CSS das curvas usadas no JS) */
+  --ease-expo-out:cubic-bezier(.16,1,.3,1);      /* gsap "expo.out" — a mais usada */
+  --ease-expo-in:cubic-bezier(.7,0,.84,0);       /* gsap "expo.in" */
+  --ease-expo-in-out:cubic-bezier(.87,0,.13,1);  /* gsap "expo.inOut" */
+  --ease-power1-out:cubic-bezier(.25,.46,.45,.94); /* gsap "power1.out" */
+  --ease-power3-out:cubic-bezier(.215,.61,.355,1); /* gsap "power3.out" */
+  --ease-quad-out:cubic-bezier(.25,.46,.45,.94); /* gsap "quad.out" */
+  --ease-quad-in-out:cubic-bezier(.455,.03,.515,.955); /* gsap "quad.inOut" */
+  --dur-xs:.25s;   /* hover de letras do menu */
+  --dur-sm:.5s;    /* slider, máscara */
+  --dur-md:.7s;    /* conteúdo do slider */
+  --dur-lg:1s;     /* header, entradas */
+  --dur-xl:1.5s;   /* títulos em linhas */
+  --dur-xxl:2s;    /* saída do loader */
+  --dur-scene:3s;  /* entrada do cérebro 3D */
+  --stagger-char:.035s;
+  --stagger-word:.025s;
+  --stagger-logo:.05s;
+  --stagger-line:.1s;
+  --stagger-icon:.2s;
+  --rotate-line:7deg;     /* rotação inicial das linhas de texto */
+  --rotate-block:14deg;   /* rotação inicial de blocos */
+  --scroll-lerp:.075;     /* rolagem suave */
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;font-size:16px}
+body{background:var(--color-bg);color:var(--color-text);font-family:var(--font-sans);font-weight:var(--fw-regular);line-height:var(--lh-body);overflow-x:hidden}
+a{color:inherit}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.9em;color:var(--color-accent-light)}
+::selection{background:var(--color-accent);color:#fff}
+.page{position:relative;z-index:1}
+
+/* ---------- Canvas 3D ---------- */
+#webgl{position:fixed;inset:0;width:100%;height:100%;z-index:0;opacity:0;transition:opacity .8s var(--ease-out-soft);pointer-events:none}
+#webgl.is-visible{opacity:1}
+#fallback{position:absolute;inset:0;width:100%;height:100%;display:none}
+.no-webgl #fallback{display:block}
+
+/* ---------- Loader ---------- */
+.loader{position:fixed;inset:0;z-index:200;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px}
+.loader__spinner{width:52px;height:52px}
+.loader__heading{text-align:center;font-size:clamp(22px,2.4vw,36px);line-height:1.2;letter-spacing:-.01em}
+.loader__line{display:block;overflow:hidden;padding:0 .1em .08em}
+.loader__line span{display:block;transform-origin:0 0}
+.loader__loading{position:absolute;left:24px;bottom:22px;overflow:hidden;font-size:12px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label-wide)}
+.loader__loading span{display:inline-block}
+.loader__dots::after{content:"";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+
+/* ---------- Máscara de navegação ---------- */
+.mask{position:fixed;inset:0;z-index:150;pointer-events:none;display:grid;place-items:center}
+.mask__bg{position:absolute;inset:0;background:#000;opacity:0;visibility:hidden}
+.mask svg{position:relative;width:52px;height:52px;opacity:0;visibility:hidden}
+
+/* ---------- Top nav ---------- */
+.topnav{position:fixed;inset:0 0 auto 0;z-index:60;padding:18px 24px}
+.topnav__bg{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.55));backdrop-filter:var(--blur-glass);-webkit-backdrop-filter:var(--blur-glass);transform:scaleY(0);transform-origin:top}
+.topnav__inner{position:relative;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:var(--fw-semibold);font-size:24px;letter-spacing:-.02em;line-height:1}
+.logo img{height:30px}
+.logo__text{display:flex;overflow:hidden;padding-bottom:2px}
+.logo__text span{display:inline-block}
+.logo small{font-size:11px;letter-spacing:var(--ls-label-wide);text-transform:uppercase;color:var(--color-text-muted);font-weight:var(--fw-semibold);margin-left:8px;align-self:center}
+.topnav nav{display:flex;align-items:center;gap:28px}
+.nav-link{display:inline-flex;overflow:hidden;height:1.4em;line-height:1.4em;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text-muted);text-decoration:none;transition:color var(--dur-base) var(--ease-out-soft)}
+.nav-link .ch{display:inline-block;white-space:pre}
+.nav-link:hover,.nav-link.is-active{color:var(--color-text)}
+
+/* ---------- Botões ---------- */
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;border:0;cursor:pointer;background:var(--color-accent);color:#fff;border-radius:var(--radius-btn);padding:1.03rem 1.25rem;font:var(--fw-semibold) 14px/1 var(--font-sans);letter-spacing:var(--ls-label);text-transform:uppercase;text-decoration:none}
+.btn span{position:relative;z-index:2}
+.btn::before{content:"";position:absolute;inset:0;background:var(--color-hover);clip-path:ellipse(120% 180% at 50% 310%);transition:clip-path var(--dur-reveal) var(--ease-out-cubic);z-index:1}
+.btn:hover::before,.btn:focus-visible::before{clip-path:ellipse(120% 180% at 50% 60%)}
+.btn--sm{padding:.55rem .85rem;font-size:12px}
+.btn--ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--color-border)}
+.btn--glow{box-shadow:var(--shadow-glow)}
+.round-btn{position:relative;overflow:hidden;width:44px;height:44px;border-radius:var(--radius-round);border:0;background:transparent;color:#fff;display:inline-grid;place-items:center;cursor:pointer;flex:none}
+.round-btn__bg,.round-btn__hover{position:absolute;inset:0;border-radius:50%}
+.round-btn__bg{background:var(--color-accent)}
+.round-btn__hover{background:var(--color-hover);transform:scale(0);transition:transform var(--dur-fast) var(--ease-out-quart)}
+.round-btn:hover .round-btn__hover{transform:scale(1)}
+.round-btn svg{position:relative;z-index:1}
+
+/* ---------- Layout ---------- */
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;max-width:1366px;margin:0 auto;padding:0 32px}
+.sidebar{position:sticky;top:96px;align-self:start;padding-top:8px}
+.sidebar ol{list-style:none;display:grid;gap:2px}
+.sidebar a{display:flex;gap:14px;align-items:baseline;padding:7px 0;text-decoration:none;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text-muted);transition:color var(--dur-base) var(--ease-out-soft)}
+.sidebar a b{font-weight:var(--fw-regular);color:var(--color-surface-3);font-size:12px;min-width:20px;transition:color var(--dur-base) var(--ease-out-soft)}
+.sidebar a:hover,.sidebar a.is-active{color:var(--color-text)}
+.sidebar a.is-active b{color:var(--color-highlight)}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;padding:120px 32px 80px}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(0deg,#000,transparent);pointer-events:none}
+.hero__inner{position:relative;z-index:2;max-width:1366px;margin:0 auto;width:100%}
+.display{font-size:clamp(56px,9.4vw,150px);line-height:var(--lh-tight);letter-spacing:var(--ls-display);font-weight:var(--fw-regular)}
+.eyebrow{display:block;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-highlight)}
+.hero .eyebrow{margin:32px 0 14px}
+.lead{font-size:clamp(17px,1.3vw,22px);line-height:1.4;max-width:34ch;color:var(--color-text);font-weight:var(--fw-light)}
+.hero__meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.hero__hint{position:absolute;right:32px;bottom:28px;z-index:2;font-size:12px;letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text-muted);font-weight:var(--fw-semibold)}
+
+/* ---------- Seções ---------- */
+main{padding:40px 0 120px;min-width:0}
+section.ds{padding:72px 0;border-top:1px solid var(--color-border);scroll-margin-top:80px}
+.ds__head{display:flex;gap:20px;align-items:baseline;margin-bottom:40px}
+.ds__num{font-size:13px;font-weight:var(--fw-semibold);color:var(--color-highlight);letter-spacing:var(--ls-label)}
+.h2{font-size:clamp(40px,4.2vw,64px);line-height:var(--lh-snug);letter-spacing:-.03em;font-weight:var(--fw-regular)}
+.h3{font-size:22px;line-height:var(--lh-heading);font-weight:var(--fw-regular);margin:48px 0 18px}
+.muted{color:var(--color-text-muted)}
+.p{font-size:16px;line-height:1.6;color:var(--color-text-subtle);max-width:62ch}
+.inline-link{color:var(--color-highlight);text-decoration:none;position:relative;font-weight:var(--fw-semibold)}
+.inline-link::after{content:"";position:absolute;left:0;bottom:0;height:1px;width:100%;background:var(--color-highlight);transform-origin:right;transition:transform var(--dur-slow) var(--ease-out-expo)}
+.inline-link:hover::after{transform:scaleX(0)}
+
+/* split text */
+.split-line{display:block;overflow:hidden;padding-bottom:.06em;margin-bottom:-.06em}
+.split-inner{display:block;transform-origin:0 0}
+.split-ch{display:inline-block;white-space:pre}
+
+/* swatches */
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:16px}
+.swatch{border:1px solid var(--color-border);border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface);cursor:pointer;text-align:left;color:inherit;font:inherit;padding:0}
+.swatch__chip{height:96px}
+.swatch__info{padding:12px 14px;display:grid;gap:2px}
+.swatch__name{font-size:14px;font-weight:var(--fw-semibold)}
+.swatch__hex{font-size:12px;color:var(--color-text-muted);letter-spacing:var(--ls-label);text-transform:uppercase}
+.swatch__token{font-size:12px;color:var(--color-text-muted);font-family:ui-monospace,Consolas,monospace}
+.swatch:hover .swatch__token{color:var(--color-accent-light)}
+.strip{display:flex;height:64px;border-radius:var(--radius-sm);overflow:hidden;margin-top:24px}
+.strip div{flex:1;min-width:0;overflow:hidden;display:flex;align-items:flex-end;padding:8px;font-size:11px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label)}
+
+/* type */
+.type-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:24px;align-items:baseline;padding:18px 0;border-bottom:1px solid var(--color-border)}
+.type-row__meta{font-size:12px;color:var(--color-text-muted);letter-spacing:var(--ls-label);text-transform:uppercase;line-height:1.6}
+.type-row__sample{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weights{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.weight{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:24px}
+.weight div{font-size:64px;line-height:1}
+.weight span{display:block;margin-top:12px;font-size:12px;color:var(--color-text-muted);letter-spacing:var(--ls-label);text-transform:uppercase}
+
+/* spacing */
+.space-row{display:grid;grid-template-columns:120px 80px minmax(0,1fr);gap:16px;align-items:center;padding:10px 0;font-size:13px}
+.space-row code{font-size:12px}
+.space-bar{height:14px;background:var(--color-accent);border-radius:2px}
+
+/* radius */
+.radii{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.radius-box{aspect-ratio:1;background:var(--color-surface);border:1px solid var(--color-border);display:flex;flex-direction:column;justify-content:flex-end;padding:16px;font-size:13px}
+.radius-box code{font-size:12px;color:var(--color-text-muted)}
+
+/* effects */
+.effects{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+.effect{position:relative;height:180px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--color-border);display:flex;align-items:flex-end;padding:16px;font-size:13px}
+.effect--glass-bg{background:radial-gradient(circle at 30% 40%,var(--color-highlight),transparent 40%),radial-gradient(circle at 70% 60%,var(--color-accent),transparent 45%),#000}
+.effect__glass{position:absolute;inset:36px 28px auto 28px;height:54px;border-radius:var(--radius-pill);border:2px solid var(--color-border);background:var(--glass-bg);backdrop-filter:var(--blur-glass);-webkit-backdrop-filter:var(--blur-glass)}
+.effect--glow{background:var(--color-surface);justify-content:space-between;align-items:center;flex-direction:column;padding:40px 16px 16px}
+.effect--dim{background:url(ASSETS/design-system/team/poppy.jpg) center/cover}
+.effect--dim::before{content:"";position:absolute;inset:0;backdrop-filter:var(--image-dim);-webkit-backdrop-filter:var(--image-dim);transition:backdrop-filter var(--dur-base) var(--ease-quad-out)}
+.effect--dim:hover::before{backdrop-filter:none;-webkit-backdrop-filter:none}
+.effect span{position:relative;z-index:2}
+.effect code{display:block;font-size:11px;color:var(--color-text-muted)}
+
+/* motion */
+.motion-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.motion{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:18px;cursor:pointer}
+.motion__track{height:28px;position:relative;margin-bottom:14px;border-bottom:1px solid var(--color-border)}
+.motion__dot{position:absolute;left:0;top:6px;width:14px;height:14px;background:var(--color-highlight);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.motion.is-run .motion__dot{left:calc(100% - 14px)}
+.motion b{font-size:14px;font-weight:var(--fw-semibold)}
+.motion code{display:block;font-size:11px;color:var(--color-text-muted);margin-top:4px}
+
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th{text-align:left;font-size:12px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text-muted);padding:10px 12px 10px 0;border-bottom:1px solid var(--color-border)}
+.table td{padding:12px 12px 12px 0;border-bottom:1px solid var(--color-border);vertical-align:top;color:var(--color-text-subtle)}
+.table td:first-child{color:var(--color-text);white-space:nowrap}
+.table-wrap{overflow-x:auto}
+
+/* animações (demos) */
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.demo{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.demo__top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.demo__title{font-size:12px;color:var(--color-text-muted);letter-spacing:var(--ls-label);text-transform:uppercase;font-weight:var(--fw-semibold)}
+.demo__stage{min-height:120px;display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:12px;position:relative;overflow:hidden}
+.demo__meta{font-size:12px;color:var(--color-text-muted);font-family:ui-monospace,Consolas,monospace;line-height:1.6}
+.demo--wide{grid-column:1/-1}
+.mini-cards{display:flex;gap:10px;flex-wrap:wrap}
+.mini-card{width:72px;height:72px;border-radius:var(--radius-sm);background:var(--color-surface-2)}
+.mini-card:nth-child(2){background:var(--color-accent)}
+.mini-card:nth-child(3){background:var(--color-highlight)}
+.mini-card:nth-child(4){background:var(--color-green)}
+.parallax-stage{height:220px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center}
+.parallax-stage div{height:120px;border-radius:var(--radius-card);display:grid;place-items:center;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase}
+.toggle{display:inline-flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;background:none;border:0;color:var(--color-text)}
+.toggle i{width:40px;height:22px;border-radius:20px;background:var(--color-surface-2);position:relative;transition:background var(--dur-fast) var(--ease-out-quart)}
+.toggle i::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform var(--dur-fast) var(--ease-out-quart)}
+.toggle[aria-pressed="true"] i{background:var(--color-accent)}
+.toggle[aria-pressed="true"] i::after{transform:translateX(18px)}
+.replay{background:none;border:1px solid var(--color-border);color:var(--color-text);border-radius:var(--radius-pill);padding:6px 12px;font:var(--fw-semibold) 11px/1 var(--font-sans);letter-spacing:var(--ls-label-wide);text-transform:uppercase;cursor:pointer;transition:border-color var(--dur-fast) var(--ease-out-quart),color var(--dur-fast) var(--ease-out-quart);flex:none}
+.replay:hover{border-color:var(--color-highlight);color:var(--color-highlight)}
+
+/* components */
+.comp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.comp{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:28px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.comp__label{font-size:12px;color:var(--color-text-muted);letter-spacing:var(--ls-label);text-transform:uppercase;font-weight:var(--fw-semibold)}
+.comp__stage{display:flex;flex-wrap:wrap;gap:12px;align-items:center;min-height:60px}
+.cookie{display:flex;align-items:center;gap:14px;border:2px solid var(--color-border);border-radius:var(--radius-pill);padding:.5rem .55rem .5rem 1.2rem;background:var(--glass-bg-strong);backdrop-filter:var(--blur-glass);-webkit-backdrop-filter:var(--blur-glass);font-size:13px}
+.cookie a{font-weight:var(--fw-semibold);text-decoration:underline}
+.bullet-list{list-style:none;display:grid;gap:12px;font-size:16px}
+.bullet-list li{display:flex;gap:12px;align-items:baseline}
+.bullet-list li::before{content:"";width:9px;height:9px;flex:none;background:var(--color-accent);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.bullet-list li:nth-child(2)::before{background:var(--color-highlight)}
+.bullet-list li:nth-child(3)::before{background:var(--color-green)}
+
+/* slider da equipe */
+.team{grid-column:1/-1}
+.team__viewport{position:relative;height:400px;overflow:hidden}
+.team-card{position:absolute;left:50%;top:0;width:280px;height:380px;margin-left:-140px;border-radius:var(--radius-card);overflow:hidden;background:#070707}
+.team-card__image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:var(--image-dim)}
+.team-card__content{position:absolute;inset:auto 0 0 0;padding:22px;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent)}
+.team-card__clip{overflow:hidden}
+.team-card__text{display:block}
+.team-card__role{font-size:11px;font-weight:var(--fw-semibold);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-accent-light)}
+.team-card__name{font-size:34px;line-height:1;margin:8px 0 14px}
+.team-card__social{display:flex;gap:10px}
+.team-card__social a{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.1);text-decoration:none;font-size:11px;font-weight:var(--fw-semibold);transition:background var(--dur-base) var(--ease-out-soft)}
+.team-card__social a:first-child:hover{background:var(--color-twitter)}
+.team-card__social a:last-child:hover{background:var(--color-linkedin)}
+.team__controls{display:flex;gap:10px;justify-content:center;margin-top:16px}
+
+/* cena 3D */
+.scene-intro{margin-bottom:24px}
+.story{position:relative}
+.story__step{min-height:100vh;display:flex;align-items:center}
+.story__step--right{justify-content:flex-end}
+.story__step[data-step="5"]{align-items:flex-end;padding-bottom:10vh}
+.story__card{max-width:400px;padding:28px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--glass-bg-strong);backdrop-filter:var(--blur-glass);-webkit-backdrop-filter:var(--blur-glass)}
+.story__card .eyebrow{margin-bottom:12px}
+.story__card h3{font-size:34px;line-height:1.1;font-weight:var(--fw-regular);margin-bottom:12px}
+.story__card p{font-size:15px;line-height:1.55;color:var(--color-text-subtle)}
+.story__card code{font-size:12px}
+.story__hud{position:fixed;right:24px;bottom:24px;z-index:5;font:var(--fw-semibold) 12px/1 var(--font-sans);letter-spacing:var(--ls-label);text-transform:uppercase;color:var(--color-text-muted);opacity:0;transition:opacity .5s var(--ease-out-soft)}
+.story__hud.is-visible{opacity:1}
+.story__hud b{color:var(--color-highlight);font-weight:var(--fw-semibold)}
+
+/* code blocks */
+.code{position:relative;margin-top:24px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm)}
+.code pre{overflow-x:auto;padding:22px;font:13px/1.65 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--color-light)}
+.code .c{color:var(--color-text-muted)}
+.code .k{color:var(--color-accent-light)}
+.code .v{color:var(--color-highlight)}
+.copy{position:absolute;top:10px;right:10px;font:var(--fw-semibold) 11px/1 var(--font-sans);letter-spacing:var(--ls-label-wide);text-transform:uppercase;color:#fff;background:var(--color-accent);border:0;border-radius:var(--radius-btn);padding:8px 12px;cursor:pointer;transition:background var(--dur-fast) var(--ease-out-quart);z-index:2}
+.copy:hover{background:var(--color-hover)}
+.copy.is-done{background:var(--color-green)}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);transition:transform var(--dur-slow) var(--ease-out-expo);z-index:90}
+.toast.is-show{transform:translate(-50%,0)}
+
+footer{position:relative;z-index:1;border-top:1px solid var(--color-border);padding:40px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;max-width:1366px;margin:0 auto;font-size:13px;color:var(--color-text-muted)}
+
+/* breakpoints do site: 360 / 768 / 1024 / 1366 / 1921 */
+@media (max-width:1023px){
+  .layout{grid-template-columns:minmax(0,1fr);padding:0 16px}
+  .sidebar{display:none}
+  .hero{padding:110px 16px 64px}
+  .topnav{padding:14px 16px}
+  .topnav nav .nav-link{display:none}
+  .hero__hint{display:none}
+}
+@media (max-width:767px){
+  .story__step{align-items:flex-end;padding-bottom:12vh}
+  #webgl.is-hero{opacity:.55}
+}
+@media (max-width:640px){
+  .type-row{grid-template-columns:minmax(0,1fr);gap:6px}
+  .weights{grid-template-columns:1fr}
+  .space-row{grid-template-columns:90px 60px minmax(0,1fr)}
+  .logo small{display:none}
+  .demo-grid{grid-template-columns:minmax(0,1fr)}
+  .strip div{font-size:9px;padding:6px 4px}
+  .team-card{width:230px;height:330px;margin-left:-115px}
+  .team__viewport{height:340px}
+  footer{padding:32px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- Loader: os textos sobem girando quando a cena termina de carregar -->
+<div class="loader" id="loader" aria-hidden="true">
+  <svg class="loader__spinner" viewBox="0 0 52 52" fill="#fff"><rect x="23" y="4" width="6" height="6"/><rect x="42" y="23" width="6" height="6"/><rect x="23" y="42" width="6" height="6"/><rect x="4" y="23" width="6" height="6"/></svg>
+  <div class="loader__heading">
+    <span class="loader__line"><span>Sua marca tem uma identidade.</span></span>
+    <span class="loader__line"><span>Role para conhecer o Dala.</span></span>
+  </div>
+  <div class="loader__loading"><span>LOADING<span class="loader__dots"></span></span></div>
+</div>
+
+<div class="mask" id="mask" aria-hidden="true">
+  <div class="mask__bg"></div>
+  <svg viewBox="0 0 52 52" fill="#fff"><rect x="23" y="4" width="6" height="6"/><rect x="42" y="23" width="6" height="6"/><rect x="23" y="42" width="6" height="6"/><rect x="4" y="23" width="6" height="6"/></svg>
+</div>
+
+<canvas id="webgl" aria-hidden="true"></canvas>
+
+<header class="topnav" id="topnav">
+  <div class="topnav__bg"></div>
+  <div class="topnav__inner">
+    <a class="logo" href="#top" data-mask><img src="ASSETS/design-system/dala-d.png" alt=""><span class="logo__text" aria-label="Dala"><span>D</span><span>a</span><span>l</span><span>a</span></span><small>Design System</small></a>
+    <nav>
+      <a class="nav-link" href="#animacoes" data-mask>Animações</a>
+      <a class="nav-link" href="#componentes" data-mask>Componentes</a>
+      <a class="nav-link" href="#cena-3d" data-mask>Cena 3D</a>
+      <a class="btn btn--sm" href="#tokens" data-mask><span>Tokens</span></a>
+    </nav>
+  </div>
+</header>
+
+<div class="page">
+<section class="hero" id="top">
+  <canvas id="fallback" aria-hidden="true"></canvas>
+  <div class="hero__inner">
+    <h1 class="display" id="hero-title">Dala<br>design<br>system.</h1>
+    <span class="eyebrow" id="hero-eyebrow">Extraído de dala.craftedbygc.com</span>
+    <p class="lead" id="hero-lead">Fundo preto absoluto, tipografia grande em PP Neue Montreal, laranja vibrante para ação, amarelo para destaque e um cérebro de dez mil pirâmides que muda de forma enquanto você rola.</p>
+    <div class="hero__meta" id="hero-cta">
+      <a class="btn" href="#tokens" data-mask><span>Copiar tokens</span></a>
+      <a class="btn btn--ghost" href="#cena-3d" data-mask><span>Ver a cena 3D</span></a>
+    </div>
+  </div>
+  <span class="hero__hint">Mova o mouse sobre o cérebro</span>
+</section>
+
+<div class="layout">
+  <aside class="sidebar">
+    <ol>
+      <li><a href="#cores"><b>01</b>Cores</a></li>
+      <li><a href="#tipografia"><b>02</b>Tipografia</a></li>
+      <li><a href="#espacamento"><b>03</b>Espaçamento</a></li>
+      <li><a href="#raios"><b>04</b>Raios</a></li>
+      <li><a href="#efeitos"><b>05</b>Efeitos</a></li>
+      <li><a href="#movimento"><b>06</b>Movimento</a></li>
+      <li><a href="#animacoes"><b>07</b>Animações</a></li>
+      <li><a href="#componentes"><b>08</b>Componentes</a></li>
+      <li><a href="#cena-3d"><b>09</b>Cena 3D</a></li>
+      <li><a href="#tokens"><b>10</b>Tokens</a></li>
+      <li><a href="#inicio-rapido"><b>11</b>Início rápido</a></li>
+    </ol>
+  </aside>
+
+  <main>
+    <!-- 01 CORES -->
+    <section class="ds" id="cores">
+      <div class="ds__head"><span class="ds__num">01</span><h2 class="h2" data-split>Cores</h2></div>
+      <p class="p" data-reveal>O site é praticamente monocromático: preto, branco e cinzas. A cor aparece em pontos exatos: <b>laranja</b> em todo botão, <b>amarelo</b> em links e frases de destaque, <b>laranja escuro</b> só no hover. A cena 3D traz o resto da paleta. Clique numa cor para copiar o hex.</p>
+
+      <h3 class="h3">Base</h3>
+      <div class="swatches" data-swatches="base"></div>
+      <h3 class="h3">Marca e destaque</h3>
+      <div class="swatches" data-swatches="brand"></div>
+
+      <h3 class="h3">Faixa do accent</h3>
+      <div class="strip">
+        <div style="background:#FFE1CC;color:#000">FFE1CC</div>
+        <div style="background:#FFC299;color:#000">FFC299</div>
+        <div style="background:#FF9A4D;color:#000">FF9A4D</div>
+        <div style="background:#FF6B00">FF6B00</div>
+        <div style="background:#D95B00">D95B00</div>
+        <div style="background:#A64600">A64600</div>
+        <div style="background:#733000">733000</div>
+      </div>
+      <p class="p muted" style="margin-top:10px;font-size:13px">Cor principal #FF6B00 (no site original era o roxo #8052FF). Os outros tons foram gerados a partir dela.</p>
+
+      <h3 class="h3">Partículas do cérebro 3D (textura cd-33.png)</h3>
+      <div class="swatches" data-swatches="particles"></div>
+      <h3 class="h3">Pirâmides soltas na frente da câmera</h3>
+      <div class="swatches" data-swatches="front"></div>
+
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* COLORS */</span>
+<span class="k">--color-bg</span>: <span class="v">#000000</span>;
+<span class="k">--color-surface</span>: <span class="v">#070707</span>;
+<span class="k">--color-text</span>: <span class="v">#FFFFFF</span>;
+<span class="k">--color-text-muted</span>: <span class="v">#9A9A9A</span>;
+<span class="k">--color-accent</span>: <span class="v">#FF6B00</span>;
+<span class="k">--color-accent-light</span>: <span class="v">#FFE1CC</span>;
+<span class="k">--color-highlight</span>: <span class="v">#FFB829</span>;
+<span class="k">--color-green</span>: <span class="v">#189B81</span>;
+<span class="k">--color-hover</span>: <span class="v">#D95B00</span>;
+<span class="k">--color-border</span>: <span class="v">rgba(255,255,255,.1)</span>;
+<span class="k">--front-violet</span>: <span class="v">#B8500F</span>; <span class="k">--front-amber</span>: <span class="v">#BA882B</span>;
+<span class="k">--front-green</span>: <span class="v">#287464</span>;  <span class="k">--front-lilac</span>: <span class="v">#C9A58C</span>;</pre></div>
+    </section>
+
+    <!-- 02 TIPOGRAFIA -->
+    <section class="ds" id="tipografia">
+      <div class="ds__head"><span class="ds__num">02</span><h2 class="h2" data-split>Tipografia</h2></div>
+      <p class="p" data-reveal>Uma única família, <b>PP Neue Montreal</b> (Pangram Pangram), em três pesos. Títulos enormes com entrelinha 0.9 e tracking negativo; rótulos pequenos sempre em caixa alta, semibold, com tracking de 0.025em. O <code>html</code> do site usa <code>font-size: .8333vw</code>, então 1rem = 16px numa tela de 1920px e tudo escala junto.</p>
+
+      <div class="weights" style="margin-top:32px">
+        <div class="weight"><div style="font-weight:200">Aa</div><span>Light · 200</span></div>
+        <div class="weight"><div style="font-weight:400">Aa</div><span>Regular · 400</span></div>
+        <div class="weight"><div style="font-weight:600">Aa</div><span>Semibold · 600</span></div>
+      </div>
+
+      <h3 class="h3">Escala (classes .t-* do site)</h3>
+      <div id="typescale"></div>
+
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* TYPOGRAPHY */</span>
+<span class="k">--font-sans</span>: <span class="v">PPNeueMontreal, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif</span>;
+<span class="k">--fw-light</span>: <span class="v">200</span>;  <span class="k">--fw-regular</span>: <span class="v">400</span>;  <span class="k">--fw-semibold</span>: <span class="v">600</span>;
+<span class="k">--lh-tight</span>: <span class="v">.9</span>;  <span class="k">--lh-snug</span>: <span class="v">1.1</span>;  <span class="k">--lh-heading</span>: <span class="v">1.2</span>;  <span class="k">--lh-body</span>: <span class="v">1.5</span>;
+<span class="k">--ls-display</span>: <span class="v">-.04em</span>;  <span class="k">--ls-label</span>: <span class="v">.025em</span>;  <span class="k">--ls-label-wide</span>: <span class="v">.05em</span>;
+
+<span class="c">/* escala fluida igual ao site */</span>
+html { font-size: <span class="v">.8333333vw</span>; } <span class="c">/* 16px @ 1920px */</span>
+.display { font-size: <span class="v">9.375rem</span>; line-height: <span class="v">.9</span>; letter-spacing: <span class="v">-.04em</span>; }
+.label   { font-size: <span class="v">1rem</span>; font-weight: <span class="v">600</span>; letter-spacing: <span class="v">.025em</span>; text-transform: uppercase; }</pre></div>
+    </section>
+
+    <!-- 03 ESPAÇAMENTO -->
+    <section class="ds" id="espacamento">
+      <div class="ds__head"><span class="ds__num">03</span><h2 class="h2" data-split>Espaçamento</h2></div>
+      <p class="p" data-reveal>Tudo em <code>rem</code> sobre base de 8px. O grid é flex com gutter de 2rem; o container cresce em degraus: 360 → 768 → 1024 → 1366 → 1921px, com padding lateral de 1rem (mobile) e 2rem (tablet em diante).</p>
+      <div id="spacescale" style="margin-top:24px"></div>
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* SPACING — base 8px */</span>
+<span class="k">--space-1</span>: <span class="v">.375rem</span>; <span class="c">/* 6   */</span>
+<span class="k">--space-2</span>: <span class="v">.75rem</span>;  <span class="c">/* 12  */</span>
+<span class="k">--space-3</span>: <span class="v">1rem</span>;    <span class="c">/* 16  */</span>
+<span class="k">--space-4</span>: <span class="v">1.5rem</span>;  <span class="c">/* 24  */</span>
+<span class="k">--space-5</span>: <span class="v">2rem</span>;    <span class="c">/* 32 · gutter */</span>
+<span class="k">--space-6</span>: <span class="v">3rem</span>;    <span class="c">/* 48  */</span>
+<span class="k">--space-7</span>: <span class="v">4.5rem</span>;  <span class="c">/* 72  */</span>
+<span class="k">--space-8</span>: <span class="v">7.5rem</span>;  <span class="c">/* 120 */</span>
+
+.container { width: 100%; margin: 0 auto; padding: 0 <span class="v">1rem</span>; }
+@media (min-width: 768px)  { .container { max-width: <span class="v">768px</span>; padding: 0 <span class="v">2rem</span>; } }
+@media (min-width: 1024px) { .container { max-width: <span class="v">1024px</span>; } }
+@media (min-width: 1366px) { .container { max-width: <span class="v">1366px</span>; } }
+@media (min-width: 1921px) { .container { max-width: <span class="v">1921px</span>; } }</pre></div>
+    </section>
+
+    <!-- 04 RAIOS -->
+    <section class="ds" id="raios">
+      <div class="ds__head"><span class="ds__num">04</span><h2 class="h2" data-split>Raios</h2></div>
+      <p class="p" data-reveal>Formas são ou bem arredondadas (pílulas, círculos, cards de 2rem) ou retas. Não existe meio-termo de 4px.</p>
+      <div class="radii" style="margin-top:24px">
+        <div class="radius-box" style="border-radius:10px">Small<code>10px</code></div>
+        <div class="radius-box" style="border-radius:1.875rem">Botão<code>1.875rem</code></div>
+        <div class="radius-box" style="border-radius:2rem">Card<code>2rem</code></div>
+        <div class="radius-box" style="border-radius:50px">Pílula<code>50px</code></div>
+        <div class="radius-box" style="border-radius:50%;justify-content:center;align-items:center;text-align:center">Círculo<code>50%</code></div>
+      </div>
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* RADIUS */</span>
+<span class="k">--radius-sm</span>: <span class="v">10px</span>;
+<span class="k">--radius-btn</span>: <span class="v">1.875rem</span>;
+<span class="k">--radius-card</span>: <span class="v">2rem</span>;
+<span class="k">--radius-pill</span>: <span class="v">50px</span>;
+<span class="k">--radius-round</span>: <span class="v">50%</span>;</pre></div>
+    </section>
+
+    <!-- 05 EFEITOS -->
+    <section class="ds" id="efeitos">
+      <div class="ds__head"><span class="ds__num">05</span><h2 class="h2" data-split>Efeitos</h2></div>
+      <p class="p" data-reveal>O site não usa nenhuma <code>box-shadow</code>. A profundidade vem de vidro fosco (blur de 20px sobre gradiente preto translúcido), de fotos apagadas em cinza que acendem quando ficam ativas e da própria cena 3D. O glow laranja é uma sugestão para destacar CTAs em fundo preto.</p>
+      <div class="effects" style="margin-top:24px">
+        <div class="effect effect--glass-bg"><div class="effect__glass"></div><span>Vidro fosco<code>blur(20px) + gradiente .5 → .1</code></span></div>
+        <div class="effect effect--glow"><a class="btn btn--glow" href="#efeitos"><span>Request access</span></a><span>Glow (sugerido)<code>0 0 32px rgba(255,107,0,.45)</code></span></div>
+        <div class="effect effect--dim"><span>Foto apagada (passe o mouse)<code>grayscale(1) brightness(.1)</code></span></div>
+      </div>
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* EFFECTS */</span>
+<span class="k">--blur-glass</span>: <span class="v">blur(20px)</span>;
+<span class="k">--glass-bg</span>: <span class="v">linear-gradient(0deg, rgba(0,0,0,.5), rgba(0,0,0,.1))</span>;
+<span class="k">--glass-bg-strong</span>: <span class="v">linear-gradient(0deg, rgba(0,0,0,.8), rgba(0,0,0,.9))</span>;
+<span class="k">--image-dim</span>: <span class="v">grayscale(1) brightness(.1)</span>;
+<span class="k">--shadow-glow</span>: <span class="v">0 0 32px rgba(255,107,0,.45)</span>; <span class="c">/* sugerido */</span></pre></div>
+    </section>
+
+    <!-- 06 MOVIMENTO -->
+    <section class="ds" id="movimento">
+      <div class="ds__head"><span class="ds__num">06</span><h2 class="h2" data-split>Movimento</h2></div>
+      <p class="p" data-reveal>Dois grupos de curvas. As do <b>CSS</b> cuidam de hovers e cores. As do <b>GSAP</b> (JavaScript) cuidam de tudo que entra, sai ou gira; a assinatura do site é <code>expo.out</code>: arranque rápido e pouso bem longo. Clique em um card para ver a curva.</p>
+      <h3 class="h3">Curvas CSS</h3>
+      <div class="motion-grid" data-motion="css"></div>
+      <h3 class="h3">Curvas GSAP</h3>
+      <div class="motion-grid" data-motion="gsap"></div>
+
+      <h3 class="h3">Durações e atrasos usados no JavaScript</h3>
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Valor</th><th>Onde aparece</th></tr></thead>
+        <tbody>
+          <tr><td>0.25s</td><td>Letra do menu subindo no hover (power1.out)</td></tr>
+          <tr><td>0.5s</td><td>Slider da equipe, máscara de navegação, troca de foto (quad.out)</td></tr>
+          <tr><td>0.7s</td><td>Texto e ícones do card ativo (expo.out)</td></tr>
+          <tr><td>0.8 – 1s</td><td>Parágrafos em linhas, logo do header, blocos girando (expo.out)</td></tr>
+          <tr><td>1.5s</td><td>Títulos em linhas, padrão do preset (power3.out)</td></tr>
+          <tr><td>2s</td><td>Saída do loader (expo.out)</td></tr>
+          <tr><td>3s</td><td>Entrada do cérebro 3D (linear + power2.out)</td></tr>
+          <tr><td>stagger .035 / .025</td><td>Por linha / por letra no efeito de letras</td></tr>
+          <tr><td>stagger .05</td><td>Letras do logo "Dala"</td></tr>
+          <tr><td>stagger .1 – .2</td><td>Linhas de título / ícones sociais</td></tr>
+          <tr><td>lerp .075</td><td>Rolagem suave (o scroll persegue o alvo 7,5% por quadro)</td></tr>
+          <tr><td>lerp .1</td><td>Todos os valores da cena 3D</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* MOTION — CSS */</span>
+<span class="k">--ease-out-quart</span>: <span class="v">cubic-bezier(.25,1,.5,1)</span>;    <span class="c">/* botões redondos */</span>
+<span class="k">--ease-out-soft</span>: <span class="v">cubic-bezier(.5,1,.89,1)</span>;    <span class="c">/* cor de links */</span>
+<span class="k">--ease-out-expo</span>: <span class="v">cubic-bezier(.19,1,.22,1)</span>;   <span class="c">/* sublinhados */</span>
+<span class="k">--ease-out-cubic</span>: <span class="v">cubic-bezier(.215,.61,.355,1)</span>; <span class="c">/* hover do .btn */</span>
+<span class="k">--ease-in-out</span>: <span class="v">cubic-bezier(.76,0,.24,1)</span>;
+
+<span class="c">/* MOTION — GSAP (no JS use o nome entre aspas) */</span>
+<span class="k">--ease-expo-out</span>: <span class="v">cubic-bezier(.16,1,.3,1)</span>;       <span class="c">/* "expo.out"   */</span>
+<span class="k">--ease-expo-in</span>: <span class="v">cubic-bezier(.7,0,.84,0)</span>;        <span class="c">/* "expo.in"    */</span>
+<span class="k">--ease-expo-in-out</span>: <span class="v">cubic-bezier(.87,0,.13,1)</span>;   <span class="c">/* "expo.inOut" */</span>
+<span class="k">--ease-power3-out</span>: <span class="v">cubic-bezier(.215,.61,.355,1)</span>; <span class="c">/* "power3.out" */</span>
+<span class="k">--ease-quad-out</span>: <span class="v">cubic-bezier(.25,.46,.45,.94)</span>;  <span class="c">/* "quad.out"   */</span>
+<span class="k">--dur-xs</span>: <span class="v">.25s</span>; <span class="k">--dur-sm</span>: <span class="v">.5s</span>; <span class="k">--dur-md</span>: <span class="v">.7s</span>; <span class="k">--dur-lg</span>: <span class="v">1s</span>; <span class="k">--dur-xl</span>: <span class="v">1.5s</span>; <span class="k">--dur-xxl</span>: <span class="v">2s</span>; <span class="k">--dur-scene</span>: <span class="v">3s</span>;
+<span class="k">--stagger-char</span>: <span class="v">.035s</span>; <span class="k">--stagger-word</span>: <span class="v">.025s</span>; <span class="k">--stagger-line</span>: <span class="v">.1s</span>; <span class="k">--stagger-icon</span>: <span class="v">.2s</span>;
+<span class="k">--rotate-line</span>: <span class="v">7deg</span>; <span class="k">--rotate-block</span>: <span class="v">14deg</span>; <span class="k">--scroll-lerp</span>: <span class="v">.075</span>;</pre></div>
+    </section>
+
+    <!-- 07 ANIMAÇÕES -->
+    <section class="ds" id="animacoes">
+      <div class="ds__head"><span class="ds__num">07</span><h2 class="h2" data-split>Animações</h2></div>
+      <p class="p" data-reveal>Todas as animações em JavaScript do site, com os mesmos valores do código original (GSAP 3 + ScrollTrigger). Elas já estão rodando nesta página: os títulos entram em linhas, o logo encolhe quando você rola, o menu troca as letras no hover. Use "Repetir" para ver de novo.</p>
+
+      <div class="demo-grid" style="margin-top:32px">
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">01 · Loader de entrada</span><button class="replay" data-replay="loader">Repetir</button></div>
+          <p class="p" style="font-size:14px">Tela preta com 4 quadrados girando 90° (quad.inOut, 1s). Quando a cena carrega, "LOADING" sobe girando 5° e cada linha do título sobe girando 2°, as duas em 2s com <code>expo.out</code>, 0.1s uma depois da outra.</p>
+          <div class="demo__meta">loadingText: yPercent -110, rotate 5, expo.out, 2s<br>heading: yPercent -120, rotate 2, stagger .1, expo.out, 2s</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">02 · Texto em linhas girando</span><button class="replay" data-replay="lines">Repetir</button></div>
+          <div class="demo__stage"><p id="demo-lines" style="font-size:26px;line-height:1.2;font-weight:200;max-width:20ch">Faça perguntas e encontre as respostas com contexto e clareza.</p></div>
+          <div class="demo__meta">preset splitTextRotateIn · y 120% · rotate 7 · origin 0 0<br>duration .8–1.5 · stagger .1 (power1.in) · ease power3.out</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">03 · Letras subindo</span><button class="replay" data-replay="chars">Repetir</button></div>
+          <div class="demo__stage"><span class="eyebrow" id="demo-chars" style="font-size:16px">Stop managing knowledge. Start using it.</span></div>
+          <div class="demo__meta">preset splitCharsWipeUpIn · y 100% · expo.out · 1.5s<br>atraso: .035 × linha + .025 × letra</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">04 · Blocos girando para dentro</span><button class="replay" data-replay="blocks">Repetir</button></div>
+          <div class="demo__stage"><div class="mini-cards" id="demo-blocks"><div class="mini-card"></div><div class="mini-card"></div><div class="mini-card"></div><div class="mini-card"></div></div></div>
+          <div class="demo__meta">yPercent 100 · autoAlpha 0 · rotate 14 · expo.out · 1s</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">05 · Logo do header</span><button class="replay" data-replay="logo">Repetir</button></div>
+          <p class="p" style="font-size:14px">Ao rolar para baixo, as letras de "Dala" sobem e somem (fica só o ícone) e o fundo de vidro desce do topo. Ao voltar ao topo, tudo se inverte. Role a página e olhe o canto superior esquerdo.</p>
+          <div class="demo__meta">letras: y ±100%, stagger .05, expo.out, 1s<br>fundo: scaleY 0 → 1, expo.out, 1s</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">06 · Hover do menu</span></div>
+          <div class="demo__stage" style="gap:32px">
+            <a class="nav-link" href="#animacoes" style="font-size:18px">Manifesto</a>
+            <a class="nav-link" href="#animacoes" style="font-size:18px">Team</a>
+            <a class="nav-link" href="#animacoes" style="font-size:18px">Blog</a>
+          </div>
+          <div class="demo__meta">cada letra: yPercent -100 · stagger .035 · power1.out · .5s<br>a cópia de baixo é um text-shadow de 1 linha</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">07 · Máscara de navegação</span></div>
+          <div class="demo__stage"><a class="btn" href="#cena-3d" data-mask><span>Ir para a cena 3D</span></a></div>
+          <div class="demo__meta">fundo e ícone entram .5s expo.in · ícone gira 90° ×2 (quad.inOut)<br>pula para a seção em 1s · sai em 2.3s com expo.out</div>
+        </div>
+
+        <div class="demo">
+          <div class="demo__top"><span class="demo__title">08 · Rolagem suave</span><button class="toggle" id="smooth-toggle" aria-pressed="true"><i></i>Ligada</button></div>
+          <p class="p" style="font-size:14px">O site move a página sozinho: a cada quadro o scroll anda 7,5% da distância até onde a roda do mouse mandou. Dá o deslizar macio. Desligue para comparar.</p>
+          <div class="demo__meta">current += (target − current) × 0.075</div>
+        </div>
+
+        <div class="demo demo--wide">
+          <div class="demo__top"><span class="demo__title">09 · Parallax com scrub</span></div>
+          <div class="parallax-stage">
+            <div id="px-a" style="background:var(--color-accent)">y −5vw</div>
+            <div id="px-b" style="background:var(--color-surface-2)">y 2vw</div>
+          </div>
+          <div class="demo__meta">ScrollTrigger · scrub .5 · start "top bottom" · os dois blocos andam em direções opostas enquanto você rola</div>
+        </div>
+      </div>
+
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">// Texto em linhas girando (preset splitTextRotateIn do site)</span>
+gsap.from(lines, {            <span class="c">// cada linha fica dentro de um wrapper com overflow:hidden</span>
+  y: <span class="v">"120%"</span>, rotate: <span class="v">7</span>, transformOrigin: <span class="v">"0 0"</span>,
+  duration: <span class="v">.8</span>, ease: <span class="v">"power3.out"</span>,
+  stagger: { each: <span class="v">.1</span>, ease: <span class="v">"power1.in"</span> },
+  scrollTrigger: { trigger: el, start: <span class="v">"top bottom"</span> }
+});
+
+<span class="c">// Blocos girando para dentro</span>
+gsap.from(el, { yPercent: <span class="v">100</span>, autoAlpha: <span class="v">0</span>, rotate: <span class="v">14</span>, ease: <span class="v">"expo.out"</span>, duration: <span class="v">1</span> });
+
+<span class="c">// Saída do loader</span>
+gsap.timeline()
+  .to(loadingText, { yPercent: <span class="v">-110</span>, rotate: <span class="v">5</span>, ease: <span class="v">"expo.out"</span>, duration: <span class="v">2</span> }, 0)
+  .to(headingLines, { yPercent: <span class="v">-120</span>, rotate: <span class="v">2</span>, ease: <span class="v">"expo.out"</span>, duration: <span class="v">2</span>, stagger: <span class="v">.1</span> }, 0);
+
+<span class="c">// Logo do header ao rolar</span>
+gsap.to(logoLetters, { y: <span class="v">"-100%"</span>, duration: <span class="v">1</span>, ease: <span class="v">"expo.out"</span>, stagger: <span class="v">.05</span> });
+gsap.to(headerBg, { scaleY: <span class="v">1</span>, duration: <span class="v">1</span>, ease: <span class="v">"expo.out"</span> });
+
+<span class="c">// Hover do menu: letra sobe e a cópia (text-shadow) assume o lugar</span>
+gsap.timeline({ paused: true })
+  .set(chars, { textShadow: <span class="v">"0 1.4em"</span> })
+  .to(chars, { yPercent: <span class="v">-100</span>, duration: <span class="v">.5</span>, ease: <span class="v">"power1.out"</span>, stagger: <span class="v">.035</span> })
+  .set(chars, { yPercent: <span class="v">0</span>, textShadow: <span class="v">"none"</span> });
+
+<span class="c">// Parallax</span>
+gsap.from(el, { y: <span class="v">"-5vw"</span>, scrollTrigger: { trigger: el, scrub: <span class="v">.5</span>, start: <span class="v">"top bottom"</span> } });
+
+<span class="c">// Rolagem suave</span>
+current += (target - current) * <span class="v">0.075</span>; window.scrollTo(<span class="v">0</span>, current);</pre></div>
+    </section>
+
+    <!-- 08 COMPONENTES -->
+    <section class="ds" id="componentes">
+      <div class="ds__head"><span class="ds__num">08</span><h2 class="h2" data-split>Componentes</h2></div>
+      <p class="p" data-reveal>Réplicas dos componentes do site com as animações originais. Passe o mouse nos botões: o laranja escuro sobe por baixo como uma onda.</p>
+      <div class="comp-grid" style="margin-top:24px">
+        <div class="comp" data-block>
+          <span class="comp__label">Botão primário</span>
+          <div class="comp__stage"><a class="btn" href="#componentes"><span>Request access</span></a><a class="btn btn--sm" href="#componentes"><span>Accept</span></a></div>
+        </div>
+        <div class="comp" data-block>
+          <span class="comp__label">Botões redondos do slider</span>
+          <div class="comp__stage">
+            <button class="round-btn" aria-label="Anterior"><span class="round-btn__bg"></span><span class="round-btn__hover"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="1.5"/></svg></button>
+            <button class="round-btn" aria-label="Próximo"><span class="round-btn__bg"></span><span class="round-btn__hover"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#fff" stroke-width="1.5"/></svg></button>
+          </div>
+        </div>
+        <div class="comp" data-block>
+          <span class="comp__label">Navegação</span>
+          <div class="comp__stage" style="gap:28px"><a class="nav-link is-active" href="#componentes">Manifesto</a><a class="nav-link" href="#componentes">Team</a><a class="nav-link" href="#componentes">Blog</a></div>
+        </div>
+        <div class="comp" data-block>
+          <span class="comp__label">Eyebrow + texto</span>
+          <div><span class="eyebrow">Stop managing knowledge. Start using it.</span><p style="margin-top:10px;font-size:17px;line-height:1.4;font-weight:200">Plug into your team's shared brainpower and focus on <a class="inline-link" href="#componentes">being better.</a></p></div>
+        </div>
+        <div class="comp" data-block>
+          <span class="comp__label">Aviso de cookies (vidro)</span>
+          <div class="comp__stage" style="background:radial-gradient(circle at 20% 50%,#B04900,transparent 50%),radial-gradient(circle at 80% 50%,#C08000,transparent 50%);border-radius:var(--radius-sm);padding:24px 12px;justify-content:center">
+            <div class="cookie">This website uses cookies. <a href="#componentes">Learn more</a><a class="btn btn--sm" href="#componentes"><span>Accept</span></a></div>
+          </div>
+        </div>
+        <div class="comp" data-block>
+          <span class="comp__label">Lista com marcador triangular</span>
+          <ul class="bullet-list"><li>Encontre qualquer coisa</li><li>Em qualquer sistema</li><li>Com contexto e clareza</li></ul>
+        </div>
+        <div class="comp team" data-block>
+          <span class="comp__label">Slider da equipe</span>
+          <p class="p" style="font-size:14px">O card do meio acende: a foto sai do cinza escuro para colorida e cresce 20% (0.5s, quad.out). O texto do card que sai sobe e some; o do card que entra sobe de baixo (0.7s, expo.out) e os ícones crescem um de cada vez (0.2s entre eles). Os cards deslizam em 0.5s.</p>
+          <div class="team__viewport" id="team">
+            <div class="team-card"><img class="team-card__image" src="ASSETS/design-system/team/haroun.jpg" alt=""><div class="team-card__content"><div class="team-card__clip"><span class="team-card__text"><span class="team-card__role">Co Founder &amp; CEO</span><span class="team-card__name" style="display:block">Haroun<br>Hickman</span></span></div><div class="team-card__social"><a href="#componentes" aria-label="Twitter">X</a><a href="#componentes" aria-label="LinkedIn">in</a></div></div></div>
+            <div class="team-card"><img class="team-card__image" src="ASSETS/design-system/team/poppy.jpg" alt=""><div class="team-card__content"><div class="team-card__clip"><span class="team-card__text"><span class="team-card__role">Product Design Lead</span><span class="team-card__name" style="display:block">Poppy<br>Reid</span></span></div><div class="team-card__social"><a href="#componentes" aria-label="Twitter">X</a><a href="#componentes" aria-label="LinkedIn">in</a></div></div></div>
+            <div class="team-card"><img class="team-card__image" src="ASSETS/design-system/team/joel.jpg" alt=""><div class="team-card__content"><div class="team-card__clip"><span class="team-card__text"><span class="team-card__role">Co Founder &amp; CTO</span><span class="team-card__name" style="display:block">Joel<br>Kang</span></span></div><div class="team-card__social"><a href="#componentes" aria-label="Twitter">X</a><a href="#componentes" aria-label="LinkedIn">in</a></div></div></div>
+          </div>
+          <div class="team__controls">
+            <button class="round-btn" id="team-prev" aria-label="Anterior"><span class="round-btn__bg"></span><span class="round-btn__hover"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="1.5"/></svg></button>
+            <button class="round-btn" id="team-next" aria-label="Próximo"><span class="round-btn__bg"></span><span class="round-btn__hover"></span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="#fff" stroke-width="1.5"/></svg></button>
+          </div>
+        </div>
+      </div>
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">/* BUTTON — hover em onda */</span>
+.btn {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: <span class="v">1.03rem 1.25rem</span>; border: 0; border-radius: <span class="v">var(--radius-btn)</span>;
+  background: <span class="v">var(--color-accent)</span>; color: <span class="v">#fff</span>;
+  font: <span class="v">600 1rem/1 var(--font-sans)</span>; letter-spacing: <span class="v">.025em</span>; text-transform: uppercase;
+}
+.btn span { position: relative; z-index: 2; }
+.btn::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: <span class="v">var(--color-hover)</span>;
+  clip-path: <span class="v">ellipse(120% 180% at 50% 310%)</span>;
+  transition: clip-path <span class="v">var(--dur-reveal) var(--ease-out-cubic)</span>;
+}
+.btn:hover::before { clip-path: <span class="v">ellipse(120% 180% at 50% 60%)</span>; }
+
+<span class="c">// SLIDER — card ativo</span>
+gsap.to(activeImage, { scale: <span class="v">1.2</span>, filter: <span class="v">"grayscale(0) brightness(1)"</span>, duration: <span class="v">.5</span>, ease: <span class="v">"quad.out"</span> });
+gsap.to(oldImage,    { scale: <span class="v">1</span>,   filter: <span class="v">"grayscale(1) brightness(0.1)"</span>, duration: <span class="v">.5</span>, ease: <span class="v">"quad.out"</span> });
+gsap.fromTo(activeText, { y: <span class="v">"110%"</span> }, { y: <span class="v">0</span>, duration: <span class="v">.7</span>, ease: <span class="v">"expo.out"</span>, delay: <span class="v">.5</span> });
+gsap.fromTo(activeIcons, { scale: <span class="v">0</span> }, { scale: <span class="v">1</span>, duration: <span class="v">.7</span>, stagger: <span class="v">.2</span>, ease: <span class="v">"expo.out"</span>, delay: <span class="v">1</span> });</pre></div>
+    </section>
+
+    <!-- 09 CENA 3D -->
+    <section class="ds" id="cena-3d">
+      <div class="ds__head"><span class="ds__num">09</span><h2 class="h2" data-split>Cena 3D</h2></div>
+      <div class="scene-intro">
+        <p class="p" data-reveal>O cérebro é uma cena three.js com <b>10.000 pirâmides</b> (7.000 no celular) desenhadas de uma vez. As posições vêm de uma textura (<code>pos-33.exr</code>) com 4 formações; as cores (<code>cd-33.png</code>) e os tamanhos (<code>sc-33.png</code>) vêm de outras duas. Conforme a página rola, um único número, o <b>progresso de seção</b>, controla rotação, posição, explosão e qual formação aparece. O mouse empurra as pirâmides próximas e gira a câmera de leve. Role para ver as 5 fases.</p>
+        <div class="table-wrap" style="margin-top:24px"><table class="table">
+          <thead><tr><th>Parâmetro</th><th>Valor</th><th>O que faz</th></tr></thead>
+          <tbody>
+            <tr><td>Pirâmides</td><td>10.000 / 7.000</td><td>Modelo py-lod7.glb no desktop, py-monbile.glb no celular</td></tr>
+            <tr><td>Raio (factor)</td><td>4.35 / 2.5</td><td>Tamanho da formação</td></tr>
+            <tr><td>Escala</td><td>1.55 / 1.2</td><td>Multiplica o tamanho de cada pirâmide</td></tr>
+            <tr><td>Cor ×</td><td>1.3</td><td>Clareia as cores da textura</td></tr>
+            <tr><td>Roxo → laranja</td><td>matiz 25°</td><td>Pirâmides roxas e violeta da textura ganham o matiz do laranja #FF6B00, mantendo brilho e saturação (accentHue no dala-brain.js)</td></tr>
+            <tr><td>Câmera</td><td>fov 50, z 10</td><td>Gira até 0.075 rad (Y) e 0.05 rad (X) seguindo o mouse</td></tr>
+            <tr><td>Entrada</td><td>3s</td><td>As pirâmides chegam de fora para dentro, de cima para baixo</td></tr>
+            <tr><td>Suavização</td><td>lerp 0.1</td><td>Todos os valores perseguem o alvo 10% por quadro</td></tr>
+            <tr><td>Cascata</td><td>0.0005 por pirâmide</td><td>Cada pirâmide começa a transição um pouco depois da anterior</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="story" id="story">
+        <div class="story__step" data-step="1"><div class="story__card"><span class="eyebrow">Fase 1 · progresso 1 → 2.2</span><h3>Dispersão</h3><p>O cérebro desliza para a direita e as pirâmides se soltam. Cada uma multiplica a própria posição por um fator de 1 a 6, de baixo para cima. <code>u_explode 0 → 1</code></p></div></div>
+        <div class="story__step story__step--right" data-step="2"><div class="story__card"><span class="eyebrow">Fase 2 · progresso 2.7 → 3</span><h3>Lâmpada</h3><p>Tudo se recolhe numa lâmpada, montada da esquerda para a direita, enquanto o objeto gira 90° e inclina 0.49 rad. <code>u_progress 0 → 1</code></p></div></div>
+        <div class="story__step" data-step="3"><div class="story__card"><span class="eyebrow">Fase 3 · progresso 3.3 → 3.5</span><h3>Esfera</h3><p>A lâmpada vira uma esfera, que vai para a direita, cresce um pouco e inclina para o outro lado. <code>u_progress 1 → 2</code></p></div></div>
+        <div class="story__step" data-step="4"><div class="story__card"><span class="eyebrow">Fase 4 · progresso 4.5 → 5</span><h3>Nova dispersão</h3><p>A esfera explode de novo enquanto gira 225° para trás. <code>u_explode 0 → 1</code></p></div></div>
+        <div class="story__step" data-step="5"><div class="story__card"><span class="eyebrow">Fase 5 · progresso 5.7 → 6</span><h3>Logo</h3><p>As pirâmides se juntam no "D" do logo Dala, que sobe, diminui e gira de frente. <code>u_progress 2 → 3</code></p></div></div>
+      </div>
+      <div class="code"><button class="copy">Copy</button><pre><span class="c">&lt;!-- uso da cena em outra página --&gt;</span>
+&lt;script type="importmap"&gt;{"imports":{
+  "three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}&lt;/script&gt;
+&lt;canvas id="webgl" style="position:fixed;inset:0;width:100%;height:100%"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import { createBrain } from './ASSETS/design-system/dala-brain.js';
+  const brain = await createBrain(document.getElementById('webgl'), { base: 'ASSETS/design-system/' });
+  brain.activate(gsap);                          <span class="c">// entrada de 3s</span>
+  addEventListener('scroll', () =&gt; {
+    brain.setProgress(scrollY / innerHeight);    <span class="c">// 0 = cérebro … 6 = logo D</span>
+  });
+&lt;/script&gt;</pre></div>
+    </section>
+
+    <!-- 10 TOKENS -->
+    <section class="ds" id="tokens">
+      <div class="ds__head"><span class="ds__num">10</span><h2 class="h2" data-split>Tokens</h2></div>
+      <p class="p" data-reveal>Bloco completo para colar no <code>:root</code> do seu projeto.</p>
+      <div class="code"><button class="copy">Copy</button><pre id="all-tokens"></pre></div>
+    </section>
+
+    <!-- 11 INÍCIO RÁPIDO -->
+    <section class="ds" id="inicio-rapido">
+      <div class="ds__head"><span class="ds__num">11</span><h2 class="h2" data-split>Início rápido</h2></div>
+      <p class="p" data-reveal>1. Copie a pasta inteira (<code>fonts/</code>, <code>assets/</code>, <code>dala-brain.js</code>, <code>dala-motion.js</code>). 2. Cole os tokens. 3. Carregue GSAP e, se quiser o cérebro, three.js. A cena 3D só funciona servida por http: abra pelo <code>abrir-design-system.bat</code>. Aberta com dois cliques, a página mostra partículas 2D no lugar. PP Neue Montreal é uma fonte comercial da Pangram Pangram; para um projeto publicado, confira a licença ou troque por Inter ou Manrope.</p>
+      <div class="code"><button class="copy">Copy</button><pre>&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"&gt;&lt;/script&gt;
+&lt;style&gt;
+@font-face { font-family: PPNeueMontreal; font-weight: 200; src: url(ASSETS/fonts/PPNeueMontreal-Light.woff2) format("woff2"); }
+@font-face { font-family: PPNeueMontreal; font-weight: 400; src: url(ASSETS/fonts/PPNeueMontreal-Regular.woff2) format("woff2"); }
+@font-face { font-family: PPNeueMontreal; font-weight: 600; src: url(ASSETS/fonts/PPNeueMontreal-SemiBold.woff2) format("woff2"); }
+
+<span class="c">/* cole aqui o bloco :root da seção Tokens */</span>
+
+body { background: <span class="v">var(--color-bg)</span>; color: <span class="v">var(--color-text)</span>; font-family: <span class="v">var(--font-sans)</span>; -webkit-font-smoothing: antialiased; }
+.eyebrow { color: <span class="v">var(--color-highlight)</span>; font-weight: 600; letter-spacing: .025em; text-transform: uppercase; }
+&lt;/style&gt;
+
+&lt;section class="hero"&gt;
+  &lt;h1 class="display" data-split&gt;Unlock collective wisdom.&lt;/h1&gt;
+  &lt;span class="eyebrow"&gt;Stop managing knowledge. Start using it.&lt;/span&gt;
+  &lt;a class="btn" href="#"&gt;&lt;span&gt;Request access&lt;/span&gt;&lt;/a&gt;
+&lt;/section&gt;
+&lt;script src="dala-motion.js"&gt;&lt;/script&gt;  <span class="c">&lt;!-- ativa data-split, data-reveal, data-block --&gt;</span></pre></div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <span>Dala Design System · extraído de dala.craftedbygc.com</span>
+  <span>PP Neue Montreal · GSAP 3 · three.js · 11 seções</span>
+</footer>
+</div>
+
+<div class="story__hud" id="hud">Progresso da cena <b id="hud-value">1.00</b></div>
+<div class="toast"><div class="cookie" id="toast-text">Copiado</div></div>
+
+<script src="ASSETS/design-system/dala-motion.js"></script>
+<script type="module">
+  import { createBrain } from './ASSETS/design-system/dala-brain.js';
+  window.DalaBrainReady = createBrain(document.getElementById('webgl'), { base: 'ASSETS/design-system/' });
+</script>
+</body>
+</html>
