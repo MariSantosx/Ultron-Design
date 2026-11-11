@@ -17,19 +17,19 @@ const isMobile = matchMedia('(max-width: 767px)').matches;
 
 export async function createRobot(canvas) {
   const photo = new Image();                         // recorte da foto de referência (fundo removido)
-  await new Promise((ok, fail) => { photo.onload = ok; photo.onerror = () => fail(new Error('robot-photo.png')); photo.src = 'ASSETS/img/robo/robot-front.png'; });
+  await new Promise((ok, fail) => { photo.onload = ok; photo.onerror = () => fail(new Error('robot-photo.png')); photo.src = 'ASSETS/img/robo/robot-front.webp'; });
   const depthImg = new Image();                      // relevo falso do robô (só para a paralaxe do olhar)
   await new Promise((ok) => { depthImg.onload = ok; depthImg.onerror = ok; depthImg.src = 'ASSETS/img/robo/robot-front-depth.png'; });
   const headMaskImg = new Image();                   // contorno do capacete: dentro dele a cabeça é um volume 3D que gira de verdade
   await new Promise((ok) => { headMaskImg.onload = ok; headMaskImg.onerror = ok; headMaskImg.src = 'ASSETS/img/robo/robot-head-mask.png'; });
   const devImg = new Image();                        // foto do dispositivo de vidro em camadas (dobra 2), com o fundo removido
-  await new Promise((ok, fail) => { devImg.onload = ok; devImg.onerror = () => fail(new Error('ASSETS/img/dobra-2/device.png')); devImg.src = 'ASSETS/img/dobra-2/device.png'; });
+  await new Promise((ok, fail) => { devImg.onload = ok; devImg.onerror = () => fail(new Error('ASSETS/img/dobra-2/device.webp')); devImg.src = 'ASSETS/img/dobra-2/device.webp'; });
   const devDepthImg = new Image();
   await new Promise((ok) => { devDepthImg.onload = ok; devDepthImg.onerror = ok; devDepthImg.src = 'ASSETS/img/dobra-2/device-depth.png'; });
-  const luSrc = [1, 2, 3, 4].map(i => 'ASSETS/img/dobra-3/lineup-' + i + '.png');            // os quatro objetos da dobra 3 (imagens com fundo transparente)
+  const luSrc = [1, 2, 3, 4].map(i => 'ASSETS/img/dobra-3/lineup-' + i + '.webp');            // os quatro objetos da dobra 3 (imagens com fundo transparente)
   const luImgs = await Promise.all(luSrc.map(src => new Promise((ok, fail) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => fail(new Error(src)); im.src = src; })));
-  const luDeps = await Promise.all(luSrc.map(src => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(im); im.src = src.replace('.png', '-depth.png'); })));
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  const luDeps = await Promise.all(luSrc.map(src => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(im); im.src = src.replace('.webp', '-depth.png'); })));
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, isMobile ? 2 : 1.5));
   renderer.setClearColor(0x000000, 1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1010,7 +1010,7 @@ export async function createRobot(canvas) {
   const trailCx = trailCv.getContext('2d'); trailCx.fillStyle = '#000'; trailCx.fillRect(0, 0, TCW, TCH);
   const trailTex = new THREE.CanvasTexture(trailCv); trailTex.minFilter = THREE.LinearFilter; trailTex.magFilter = THREE.LinearFilter; trailTex.generateMipmaps = false;
   const humanImg = new Image(); let humanOn = false;
-  await new Promise((ok) => { humanImg.onload = () => { humanOn = true; ok(); }; humanImg.onerror = ok; humanImg.src = 'ASSETS/img/robo/human-face.png'; });
+  await new Promise((ok) => { humanImg.onload = () => { humanOn = true; ok(); }; humanImg.onerror = ok; humanImg.src = 'ASSETS/img/robo/human-face.webp'; });
   const humanTex = new THREE.Texture(humanImg); humanTex.colorSpace = THREE.SRGBColorSpace; humanTex.minFilter = THREE.LinearFilter; humanTex.generateMipmaps = false; humanTex.needsUpdate = true;
   // o rosto é encaixado pelos olhos: os olhos da foto ficam na altura/centro da viseira do robô
   const HK = humanOn ? 1.68 * 736 / humanImg.naturalWidth : 1, hW = humanOn ? humanImg.naturalWidth * HK : 700, hH = humanOn ? humanImg.naturalHeight * HK : 700;
@@ -1023,7 +1023,13 @@ export async function createRobot(canvas) {
   const glitch = { next: 3.2, until: -1, start: 0, dur: 0.6 }, glitchReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let trailLast = null;
   const coarse = matchMedia('(hover: none)').matches; let touchAt = -9;
+  let trailCleared = false;
   function trailUpdate() {
+    if (story.s > 1.1) {         // o robô já se desfez: limpa o rastro uma vez e para de redesenhar
+      if (!trailCleared) { trailCx.fillStyle = '#000'; trailCx.fillRect(0, 0, TCW, TCH); trailTex.needsUpdate = true; trailCleared = true; }
+      trailLast = null; return;
+    }
+    trailCleared = false;
     trailCx.fillStyle = 'rgba(0,0,0,0.03)'; trailCx.fillRect(0, 0, TCW, TCH);          // o rastro se fecha devagar
     let pxI = 0, pyI = 0, has = false;
     if (humanOn && st.show > 0.5) {
@@ -1220,7 +1226,9 @@ export async function createRobot(canvas) {
   /* ---------- pós-processamento: brilho nas luzes laranja ---------- */
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
-  composer.addPass(new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.65, 0.92));
+  const bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.65, 0.92);
+  { const bs = bloomPass.setSize.bind(bloomPass); bloomPass.setSize = (w, h) => bs(Math.max(2, w >> 1), Math.max(2, h >> 1)); }   // o brilho é difuso: metade da resolução basta
+  composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 
   /* ---------- estado ---------- */
@@ -1268,10 +1276,26 @@ export async function createRobot(canvas) {
 
   const look = { x: 0, y: 0, px: 0, py: 0 };
   const clock = new THREE.Clock();
+  // resolução automática: se o aparelho não dá conta (menos de ~33 quadros/s), baixa um degrau; se sobra folga, sobe de volta
+  const PR_MAX = Math.min(devicePixelRatio || 1, isMobile ? 2 : 1.5), PR_MIN = 0.75;
+  let pr = renderer.getPixelRatio(), perfAcc = 0, perfN = 0, perfCool = 60, frameNo = 0;
+  function adaptRes(raw) {
+    if (raw > 0.2) return;                       // pausa/troca de aba: ignora
+    perfAcc += raw; perfN++;
+    if (--perfCool > 0 || perfN < 40) return;
+    const avg = perfAcc / perfN; perfAcc = 0; perfN = 0;
+    let next = pr;
+    if (avg > 0.031 && pr > PR_MIN) next = Math.max(PR_MIN, pr - 0.25);
+    else if (avg < 0.0185 && pr < PR_MAX) next = Math.min(PR_MAX, pr + 0.25);
+    if (next !== pr) { pr = next; renderer.setPixelRatio(pr); composer.setPixelRatio(pr); layout(); perfCool = 90; }
+  }
   function frame() {
     raf = requestAnimationFrame(frame);
     if (!visible) return;
-    const dt = Math.min(clock.getDelta(), 0.05), t = clock.elapsedTime;
+    frameNo++;
+    if (story.s > 6.2 && (frameNo & 1)) return;   // nas dobras finais só o fundo se mexe: 30 quadros/s bastam
+    const raw = clock.getDelta(); if (story.s <= 6.2) adaptRes(raw);
+    const dt = Math.min(raw, 0.05), t = clock.elapsedTime;
     const k = 0.075 * Math.min(dt * 60, 3);
     cur.x += (mouse.x - cur.x) * k; cur.y += (mouse.y - cur.y) * k;
     sc.x += (sc.tx - sc.x) * 0.1; sc.y += (sc.ty - sc.y) * 0.1;
@@ -1291,6 +1315,8 @@ export async function createRobot(canvas) {
     root.position.set(baseX - sc.x * 0.12, baseY + Math.sin(t * 0.7) * 0.05 - intro * 0.6 + sc.y * 0.14, 0);
     root.rotation.y = intro * 0.35 - 0.06 * ps;       // a foto gira só um pouco (paralaxe com o mouse)
     root.rotation.x = 0;
+    root.visible = story.s < 1.4;                       // robô já desfeito: nada dele é desenhado
+    cloud.visible = story.s < 3.5;                      // poeira de cinzas some depois da dobra 3
     trailUpdate();
     // rajadas de falha no robô: a cada 3 a 6,5 s, por cerca de meio segundo (a intensidade pisca)
     if (!glitchReduced) {

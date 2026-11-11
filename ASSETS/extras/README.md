@@ -22,7 +22,7 @@ ASSETS/
   img/
     robo/                   robô (imagem, relevo, máscara) e rosto humano do efeito
     dobra-2/                imagem da peça (usada só como molde)
-    dobra-3/                os 4 objetos do carrossel (lineup-N e lineup-N-depth)
+    dobra-3/                os 4 objetos do carrossel (lineup-N.webp e lineup-N-depth.png)
     dobra-5-paineis/        as 5 imagens do painel fixo de "O que a Ultron faz"
     dobra-8/                janela da busca por imagem
     dobra-10-artigos/       imagens dos 6 artigos
@@ -41,7 +41,7 @@ ASSETS/
 | --- | --- |
 | Textos, seções, cores, tamanhos | `index.html` |
 | Robô, fundo, desintegração, falha | `ASSETS/js/ultron-robot.js` |
-| Rosto que aparece sob a casca do robô | `ASSETS/img/robo/human-face.png` (rosto de frente, olhos na altura da viseira) |
+| Rosto que aparece sob a casca do robô | `ASSETS/img/robo/human-face.webp` (rosto de frente, olhos na altura da viseira) |
 | Imagens dos painéis, artigos e busca | pastas `ASSETS/img/dobra-*` (mesmo nome de arquivo) |
 | Vídeo da dobra 2 | `ASSETS/video/dobra-2.mp4` (o primeiro segundo é pulado no código) |
 | Cor de destaque | variável `--accent` em `index.html` |
@@ -59,6 +59,14 @@ As mesmas funções do computador existem no celular (largura até 899 px), adap
 - Menu: botão de dois traços abre a lista de seções.
 
 Quem pede "reduzir movimento" no sistema recebe a versão sem animação (dobras em lista).
+
+## Desempenho
+
+- Imagens em WebP (de 6,6 MB para 1,9 MB) e vídeo da dobra 2 com 2 MB; o vídeo tem todos os quadros como quadro-chave para a rolagem poder avançar e voltar sem travar (no celular também).
+- Cada dobra só calcula as animações quando está perto da tela; a cena 3D desenha só o que ainda está visível e roda a 30 quadros/s nas dobras finais.
+- A resolução da cena 3D se ajusta sozinha: se o aparelho não consegue ~33 quadros/s, baixa um degrau; se sobra folga, sobe de novo (`adaptRes` em `ASSETS/js/ultron-robot.js`).
+- Sem desfoque de fundo (`backdrop-filter`) nos cartões: o fundo 3D muda todo quadro e o desfoque era o item mais caro.
+- Para trocar uma imagem, mantenha o mesmo nome e formato (.webp); para recomprimir o vídeo use `ffmpeg ... -g 1` (todos os quadros-chave).
 
 ## Observações
 
