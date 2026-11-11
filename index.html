@@ -202,45 +202,13 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .display .w{display:inline-block;white-space:nowrap}
 .display .c{display:inline-block;will-change:transform}
 
-/* ---------- Dobra 2: o problema ---------- */
-/* a cena 3D (fixa atrás de tudo) desenha à direita a mão do robô segurando a pasta laranja com os cartões; aqui fica só o texto */
-.problem{position:relative;z-index:1;height:200vh}
-.problem__sticky{position:sticky;top:0;height:100vh;height:100svh;padding:clamp(110px,15vh,150px) calc(var(--frame) + 40px) clamp(40px,7vh,72px);display:flex;align-items:flex-start;overflow:hidden}
-.problem__copy{width:min(44%,560px)}
-.problem__title{font-size:clamp(34px,4.4vw,72px);margin:0 0 28px;max-width:9em}
-.problem__title .accent{color:var(--color-accent-light)}
-.problem__lead{font-size:clamp(14px,1.15vw,18px);max-width:40ch}
-/* mensagem em destaque, abaixo da mão: negrito e um pouco maior que o resto */
-.problem__msg{position:absolute;left:calc(var(--frame) + 40px);top:56%;transform:translateY(-50%);width:min(600px,46vw)}
-.problem__close{text-align:left;font-size:clamp(22px,2.5vw,38px);line-height:1.18;font-weight:var(--fw-semibold);letter-spacing:-.02em;color:var(--color-text)}
-/* detalhe futurista: traço de luz laranja acima da mensagem */
-.problem__close::before{content:"";display:block;width:56px;height:2px;margin:0 0 var(--space-3);background:var(--color-accent);box-shadow:var(--shadow-glow)}
-.problem__close em{font-style:normal;color:var(--color-accent-light)}
 /* indicador de rolagem: linha de luz com um pixel laranja que desce */
 .scroll-cue{position:absolute;left:50%;bottom:clamp(18px,4vh,40px);width:2px;height:56px;background:linear-gradient(180deg,transparent,rgba(255,107,0,.55));opacity:0}
 .scroll-cue i{position:absolute;left:-2px;top:0;width:6px;height:6px;background:var(--color-accent);box-shadow:var(--shadow-glow);animation:cue-drop 2s var(--ease-out-cubic) infinite}
 @keyframes cue-drop{0%{top:0;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:calc(100% - 6px);opacity:0}}
 @media (max-width:899px){
-  .problem{height:auto}
-  .problem__sticky{position:static;height:auto;min-height:100vh;padding:110px calc(var(--frame) + 16px) 56px;flex-direction:column;align-items:flex-start;gap:48px}
-  .problem__copy{width:auto}
-  .problem__msg{position:relative;left:auto;top:auto;transform:none;width:auto}
   .scroll-cue{display:none}
 }
-
-/* ---------- Dobra 3: biblioteca de referências ---------- */
-.library{position:relative;z-index:1;height:260vh}
-.library__sticky{position:sticky;top:0;height:100vh;height:100svh;padding:clamp(100px,13vh,128px) 0 clamp(80px,11vh,112px);display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
-.library__head{padding:0 calc(var(--frame) + 40px)}
-.library__title{font-size:clamp(30px,3.3vw,54px);margin:0;max-width:15em}
-.library__lead{font-size:clamp(14px,1.15vw,18px);line-height:1.55;max-width:56ch;margin:0 auto;padding:0 calc(var(--frame) + 24px);text-align:center;color:rgba(255,255,255,.92)}
-.library__stage{flex:1;min-height:0}
-@media (max-width:899px){
-  .library{height:auto}
-  .library__sticky{position:static;height:auto;min-height:100vh;padding:110px 0 56px;gap:28px}
-  .library__head{padding:0 calc(var(--frame) + 16px)}
-  .library__stage{flex:none;height:46vh}
-  #l-cue{display:none}
 }
 
 /* cabeçalho ganha o vidro do design system quando a página rola */
@@ -778,6 +746,8 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
 }
 </style>
 <style id="motion">
+.key-canvas video.o2__video{visibility:hidden}
+.key-canvas canvas.o2__video{filter:none}
 /* sistema de movimento: os mesmos tempos e a mesma curva em toda a página
    --m-fast  hover, cor, borda, botões          --m-base  cartões, entradas de estado
    --m-slow  luzes e brilhos que "respiram"     --m-ease  curva padrão (a mesma do JS: MOTION.ease) */
@@ -1505,83 +1475,6 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
     requestAnimationFrame(smoothTick);
   })(smoothLast);
 
-  /* ---------- dobra 2: a rolagem conduz a cena (informações surgem enquanto o robô vira a mão com a pasta) ---------- */
-  // etapas, em função do progresso q (0 → 1) enquanto a dobra fica fixada:
-  //   1. as frases do título sobem girando (rotateIn do design system), depois o parágrafo
-  //   2. a mensagem de fechamento surge em destaque, abaixo da mão
-  // (os pixels do robô, a mão e a pasta com os cartões ficam por conta da cena 3D, ligada à mesma rolagem)
-  function initProblem() {
-    const sec = $('#problema');
-    if (!sec) return;
-    const lines = $$('#p-title .split-inner'), lead = $('#p-lead'), close = $('#p-close'), closeIn = $('.split-inner', close);
-    const c01 = (n) => Math.max(0, Math.min(1, n));
-    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
-    const pxTitle = pixel($('#p-title')), pxLead = pixel(lead), pxClose = pixel(close), cue = $('#p-cue');
-    let q = 0;
-    function frame() {
-      const wide = innerWidth >= 900;
-      const r = sec.getBoundingClientRect();
-      const span = Math.max(1, sec.offsetHeight - innerHeight);
-      const lead0 = innerHeight * 0.5;                       // começa a surgir quando a dobra chega à metade da tela
-      const target = reduce || !wide ? 1 : c01((lead0 - r.top) / (span + lead0));
-      q += (target - q) * MOTION.k(0.075);                             // mesma suavização da rolagem do design system
-      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));   // saída: se desmonta em pixels quando a dobra 3 chega
-
-      lines.forEach((l, i) => {
-        const t = ss(0.0 + i * 0.04, 0.2 + i * 0.04, q);
-        l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`;
-      });
-      pxTitle.set(Math.min(ss(0, 0.22, q), out));
-      const tl = ss(0.1, 0.28, q);
-      lead.style.opacity = tl.toFixed(3); lead.style.translate = `0 ${((1 - tl) * 28).toFixed(1)}px`;
-      pxLead.set(Math.min(tl, out));
-      const tc = ss(0.36, 0.56, q);
-      closeIn.style.transform = `translateY(${((1 - tc) * 120).toFixed(1)}%) rotate(${((1 - tc) * 7).toFixed(2)}deg)`;
-      pxClose.set(Math.min(tc, out));
-      cue.style.opacity = (ss(0.5, 0.7, q) * out).toFixed(3);    // o indicador de rolagem surge depois da mensagem
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }
-
-  /* ---------- dobra 3: biblioteca de referências ---------- */
-  // etapas, em função do progresso q (0 → 1) enquanto a dobra fica fixada:
-  //   1. o título sobe girando (acima do carrossel 3D) e o parágrafo surge embaixo dele
-  //   2. a setinha de rolagem surge embaixo
-  // (o carrossel de pôsteres do meio é da cena 3D, ligada à mesma rolagem)
-  function initLibrary() {
-    const sec = $('#biblioteca');
-    if (!sec) return;
-    const lines = $$('#l-title .split-inner'), lead = $('#l-lead'), cue = $('#l-cue');
-    const c01 = (n) => Math.max(0, Math.min(1, n));
-    const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
-    const pxTitle = pixel($('#l-title')), pxLead = pixel(lead);
-
-    let q = 0;
-    function frame(now) {
-        const wide = innerWidth >= 900;
-      const r = sec.getBoundingClientRect();
-      const span = Math.max(1, sec.offsetHeight - innerHeight);
-      const lead0 = innerHeight * 0.5;
-      const target = reduce || !wide ? 1 : c01((lead0 - r.top) / (span + lead0));
-      q += (target - q) * MOTION.k(0.075);                             // mesma suavização da rolagem do design system
-      const out = c01((r.bottom - innerHeight * 0.1) / (innerHeight * 0.55));
-
-      lines.forEach((l, i) => {
-        const t = ss(0.0 + i * 0.03, 0.16 + i * 0.03, q);
-        l.style.transform = `translateY(${((1 - t) * 120).toFixed(1)}%) rotate(${((1 - t) * 7).toFixed(2)}deg)`;
-      });
-      pxTitle.set(Math.min(ss(0, 0.18, q), out));
-      const tl = ss(0.08, 0.22, q);
-      lead.style.opacity = tl.toFixed(3); lead.style.translate = `0 ${((1 - tl) * 28).toFixed(1)}px`;
-      pxLead.set(Math.min(tl, out));
-
-      cue.style.opacity = (ss(0.7, 0.88, q) * out).toFixed(3);   // a setinha surge quando tudo já apareceu
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }
-
   /* ---------- dobra 2 (dispositivo): a rolagem monta o texto e as chamadas, com o mesmo efeito de pixels ---------- */
   function initOrbFold() {
     const sec = $('#o2');
@@ -1591,6 +1484,27 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
     const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
     const px = [label, $('#o2-title'), sub, cta, ...calls].map(pixel);
     const vid = $('#o2-video'), copy = $('.o2__copy'); const VSTART = 1.0; let vt = VSTART;     // o primeiro segundo do vídeo é cortado (as bordas dele ficavam falhadas)
+    // iPhone/iPad (Safari não aplica bem o filtro SVG num vídeo): o mesmo "recorte do preto" é feito num canvas, quadro a quadro (teste no PC: ?key=canvas)
+    const KEY_CANVAS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) || /[?&]key=canvas/.test(location.search);
+    let vcv = null, vdirty = false;
+    if (vid && KEY_CANVAS) {
+      document.documentElement.classList.add('key-canvas');
+      vcv = document.createElement('canvas'); vcv.width = 640; vcv.height = 360; vcv.className = 'o2__video'; vcv.setAttribute('aria-hidden', 'true');
+      vid.after(vcv);
+      const vctx = vcv.getContext('2d', { willReadFrequently: true });
+      vcv.paint = () => {
+        try {
+          vctx.drawImage(vid, 0, 0, 640, 360);
+          const im = vctx.getImageData(0, 0, 640, 360), d = im.data;
+          for (let i = 0; i < d.length; i += 4) {      // igual ao filtro #o2key: cor x1,1 e transparência vinda do brilho
+            const r = d[i], g = d[i + 1], b = d[i + 2], a = (r + g + b) / 765 * 9 - 1.25;
+            d[i] = Math.min(255, r * 1.1); d[i + 1] = Math.min(255, g * 1.1); d[i + 2] = Math.min(255, b * 1.1); d[i + 3] = a <= 0 ? 0 : a >= 1 ? 255 : a * 255;
+          }
+          vctx.putImageData(im, 0, 0);
+        } catch (e) { /* sem quadro ainda */ }
+      };
+      vid.addEventListener('seeked', () => { vdirty = true; }); vid.addEventListener('loadeddata', () => { vdirty = true; });
+    }
     // celular: o navegador só carrega o vídeo depois de um gesto do usuário. No primeiro toque/rolagem ele "destrava" (toca e pausa na hora) e daí a rolagem consegue avançar os quadros
     if (vid) {
       let primed = false;
@@ -1653,6 +1567,7 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
         const cm = reduce ? 0 : 1;
         vid.style.scale = (1 + cm * 0.03 * (1 - ss(0.85, 1.55, sS)) - 0.3 * ss(1.5, 2.0, sS)).toFixed(4);   // nunca menor que a tela enquanto a peça está aberta; encolhe quando vira pasta
         vid.style.translate = `-50% calc(-50% + ${(cm * ((1.5 - sS) * 26)).toFixed(1)}px)`;
+        if (vcv) { vcv.style.opacity = vid.style.opacity; vcv.style.scale = vid.style.scale; vcv.style.translate = vid.style.translate; if (vdirty) { vdirty = false; vcv.paint(); } }
         copy.style.translate = wide ? `0 calc(-50% + ${(cm * (1.5 - sS) * -18).toFixed(1)}px)` : '';   // o texto anda mais devagar que a peça: profundidade
         const want = reduce ? VSTART : VSTART + ss(0.06, 0.94, pv) * ((vid.duration || 3) - VSTART - 0.05);
         vt += (want - vt) * MOTION.k(0.18);
