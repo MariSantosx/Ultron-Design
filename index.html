@@ -1537,6 +1537,18 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
     const ss = (a, b, v) => { const t = c01((v - a) / (b - a)); return t * t * (3 - 2 * t); };
     const px = [label, $('#o2-title'), sub, cta, ...calls].map(pixel);
     const vid = $('#o2-video'), copy = $('.o2__copy'); const VSTART = 1.0; let vt = VSTART;     // o primeiro segundo do vídeo é cortado (as bordas dele ficavam falhadas)
+    // celular: o navegador só carrega o vídeo depois de um gesto do usuário. No primeiro toque/rolagem ele "destrava" (toca e pausa na hora) e daí a rolagem consegue avançar os quadros
+    if (vid) {
+      let primed = false;
+      const prime = () => {
+        if (primed && vid.readyState >= 2) return;
+        const p = vid.play();
+        if (p && p.then) p.then(() => { vid.pause(); primed = true; }).catch(() => {}); else { vid.pause(); primed = true; }
+      };
+      ['touchstart', 'touchmove', 'pointerdown', 'wheel', 'scroll', 'keydown'].forEach((ev) => addEventListener(ev, prime, { passive: true }));
+      vid.addEventListener('loadedmetadata', prime); vid.addEventListener('canplay', () => { if (vid.paused && !primed) prime(); });
+      if (vid.readyState === 0) vid.load();
+    }
     // todos os textos da dobra são divididos em letras para receber o "puxão" (o mesmo da palavra IMAGEM do hero)
     const titleEl = $('#o2-title');
     const mkChars = (el) => { el.innerHTML = el.textContent.trim().split(/\s+/).map(w => `<span class="w">${[...w].map(ch => `<span class="c">${ch}</span>`).join('')}</span>`).join(' '); return $$('.c', el); };
