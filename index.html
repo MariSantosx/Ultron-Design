@@ -768,6 +768,14 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
 .o5__panel,.o5c,.o6c,.o7c,.pl,.ft,.o2__call li,.hero__card,.hero__list li,.hero__side .steps li{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 .o5c,.o6c,.o7c,.pl,.ft{background-color:rgba(6,7,11,.58)}
 .o5__panel{background-color:rgba(8,9,14,.66)}
+/* desempenho: o cabeçalho não borra o fundo (o fundo 3D muda todo quadro) */
+.topnav__bg{-webkit-backdrop-filter:none;backdrop-filter:none;background:linear-gradient(180deg,rgba(3,4,7,.94),rgba(3,4,7,.78))}
+/* celular: sem animações infinitas de brilho letra por letra (cada uma repinta o texto todo quadro) e sem camadas extras por letra */
+@media (max-width:899px),(hover:none){
+  .o2__title .split-line:last-child .c,.o3__title .split-line:last-child .c,.o4__row .c,.o6__title em .c,.o7__title em .c,#o8 .tt em .c,.o9 .hd .tt em .c,#o10 .hd .tt em .c{animation:none}
+  .o2__title::after{animation:none;filter:none;opacity:.7}
+  .display .c{will-change:auto}
+}
 /* texto de apoio: um pouco mais firme sobre o fundo escuro */
 .o5c p,.o6c p,.o7c p,.pl li,.pt p,.o3c p,.o2__sub,.o8 .ld,.o9 .ld,.o10 .ld{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 </style>
@@ -1292,7 +1300,7 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
       if (brain && brain.setProgress) brain.setProgress(scrollY / innerHeight);   // a cena 3D acompanha a rolagem da página inteira
 
       // letras do título: seguem o cursor e voltam suavemente ao lugar
-      if (scrollY < innerHeight * 1.6) for (const c of headChars) {
+      if (!isTouch && scrollY < innerHeight * 1.6) for (const c of headChars) {
         const b = c.el.getBoundingClientRect();
         const cx = b.left + b.width / 2 - c.x, cy = b.top + b.height / 2 - c.y;
         const dx = pointer.x - cx, dy = pointer.y - cy, d = Math.hypot(dx, dy);
@@ -2148,6 +2156,7 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
     const defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs); document.body.appendChild(svg);
     const mk = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
     let uid = 0;
+    const cheap = matchMedia('(max-width: 899px)').matches || isTouch;
     const c01 = (n) => Math.max(0, Math.min(1, n));
     const make = (el) => {
       let built = false, last = -1, id = '', mA, mB;
@@ -2167,6 +2176,10 @@ a.o11__mail{text-decoration:none;border-bottom:1px solid rgba(255,107,0,.5);padd
       };
       return {
         set(p) {
+          if (cheap) {       // celular: some em transparência (barato), sem o filtro SVG
+            const k = Math.round(c01(p) * 14); if (k === last) return; last = k;
+            el.style.filter = k <= 0 ? '' : `opacity(${(1 - 0.94 * k / 14).toFixed(2)})`; return;
+          }
           const key = Math.round(c01(p) * 70);
           if (key === last) return; last = key;
           if (key <= 0) { el.style.filter = ''; return; }

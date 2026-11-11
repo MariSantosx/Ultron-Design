@@ -13,7 +13,7 @@ import { createIcons } from './ultron-icons.js';
 
 const ACCENT = 0xFF6B00;
 const clamp = (v, a, b) => Math.min(Math.max(v, a), b);
-const isMobile = matchMedia('(max-width: 767px)').matches;
+const isMobile = matchMedia('(max-width: 899px)').matches;     // mesmo limite do layout de celular da página
 
 export async function createRobot(canvas) {
   const photo = new Image();                         // recorte da foto de referência (fundo removido)
@@ -30,7 +30,7 @@ export async function createRobot(canvas) {
   const luImgs = await Promise.all(luSrc.map(src => new Promise((ok, fail) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => fail(new Error(src)); im.src = src; })));
   const luDeps = await Promise.all(luSrc.map(src => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(im); im.src = src.replace('.webp', '-depth.png'); })));
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, isMobile ? 2 : 1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, isMobile ? 1.25 : 1.5));     // celular: telas de 3x gastariam 9 vezes os pixels
   renderer.setClearColor(0x000000, 1);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0;
@@ -1117,7 +1117,7 @@ export async function createRobot(canvas) {
   }
 
   /* ---------- pixels discretos: o robô se desintegra e viaja até a mão com a pasta (cada pixel leva a cor da sua peça) ---------- */
-  const N = 11000;
+  const N = isMobile ? 3600 : 11000;            // celular: um terço das partículas (também deixa a abertura da página bem mais rápida)
   root.updateMatrixWorld(true);
   f2.updateMatrixWorld(true);
   const colorFor = (mat) => {
@@ -1227,7 +1227,7 @@ export async function createRobot(canvas) {
   const composer = new EffectComposer(renderer);
   composer.addPass(new RenderPass(scene, camera));
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.6, 0.65, 0.92);
-  { const bs = bloomPass.setSize.bind(bloomPass); bloomPass.setSize = (w, h) => bs(Math.max(2, w >> 1), Math.max(2, h >> 1)); }   // o brilho é difuso: metade da resolução basta
+  { const bs = bloomPass.setSize.bind(bloomPass); bloomPass.setSize = (w, h) => bs(Math.max(2, w >> (isMobile ? 2 : 1)), Math.max(2, h >> (isMobile ? 2 : 1))); }   // o brilho é difuso: metade da resolução basta
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
 
@@ -1277,7 +1277,8 @@ export async function createRobot(canvas) {
   const look = { x: 0, y: 0, px: 0, py: 0 };
   const clock = new THREE.Clock();
   // resolução automática: se o aparelho não dá conta (menos de ~33 quadros/s), baixa um degrau; se sobra folga, sobe de volta
-  const PR_MAX = Math.min(devicePixelRatio || 1, isMobile ? 2 : 1.5), PR_MIN = 0.75;
+  const PR_MAX = Math.min(devicePixelRatio || 1, isMobile ? 1.25 : 1.5), PR_MIN = 0.75;
+  let halfRate = false;                           // último recurso: se mesmo na menor resolução não chega a ~33 quadros/s, a cena 3D passa a 30 quadros/s
   let pr = renderer.getPixelRatio(), perfAcc = 0, perfN = 0, perfCool = 60, frameNo = 0;
   function adaptRes(raw) {
     if (raw > 0.2) return;                       // pausa/troca de aba: ignora
@@ -1286,15 +1287,17 @@ export async function createRobot(canvas) {
     const avg = perfAcc / perfN; perfAcc = 0; perfN = 0;
     let next = pr;
     if (avg > 0.031 && pr > PR_MIN) next = Math.max(PR_MIN, pr - 0.25);
+    else if (avg > 0.036 && pr <= PR_MIN) halfRate = true;
     else if (avg < 0.0185 && pr < PR_MAX) next = Math.min(PR_MAX, pr + 0.25);
+    else if (avg < 0.017 && halfRate) halfRate = false;
     if (next !== pr) { pr = next; renderer.setPixelRatio(pr); composer.setPixelRatio(pr); layout(); perfCool = 90; }
   }
   function frame() {
     raf = requestAnimationFrame(frame);
     if (!visible) return;
     frameNo++;
-    if (story.s > 6.2 && (frameNo & 1)) return;   // nas dobras finais só o fundo se mexe: 30 quadros/s bastam
-    const raw = clock.getDelta(); if (story.s <= 6.2) adaptRes(raw);
+    if ((story.s > 6.2 || halfRate) && (frameNo & 1)) return;   // nas dobras finais só o fundo se mexe: 30 quadros/s bastam
+    const raw = clock.getDelta(); if (story.s <= 6.2) adaptRes(halfRate ? raw / 2 : raw);
     const dt = Math.min(raw, 0.05), t = clock.elapsedTime;
     const k = 0.075 * Math.min(dt * 60, 3);
     cur.x += (mouse.x - cur.x) * k; cur.y += (mouse.y - cur.y) * k;

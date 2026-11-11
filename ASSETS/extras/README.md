@@ -65,6 +65,7 @@ Quem pede "reduzir movimento" no sistema recebe a versão sem animação (dobras
 - Imagens em WebP (de 6,6 MB para 1,9 MB) e vídeo da dobra 2 com 2 MB; o vídeo tem todos os quadros como quadro-chave para a rolagem poder avançar e voltar sem travar (no celular também).
 - Cada dobra só calcula as animações quando está perto da tela; a cena 3D desenha só o que ainda está visível e roda a 30 quadros/s nas dobras finais.
 - A resolução da cena 3D se ajusta sozinha: se o aparelho não consegue ~33 quadros/s, baixa um degrau; se sobra folga, sobe de novo (`adaptRes` em `ASSETS/js/ultron-robot.js`).
+- Celular (até 899 px): cena 3D com um terço das partículas, resolução máxima 1,25x, brilho em 1/4 de resolução e, se mesmo assim o aparelho não chegar a ~33 quadros/s, a cena passa a 30 quadros/s sozinha; o dissolver dos textos usa só transparência (sem filtro SVG) e as luzes animadas letra por letra ficam estáticas.
 - Sem desfoque de fundo (`backdrop-filter`) nos cartões: o fundo 3D muda todo quadro e o desfoque era o item mais caro.
 - No iPhone/iPad o vídeo da dobra 2 tem o fundo preto removido num canvas (o Safari não aplica bem o filtro SVG no vídeo). Para ver esse modo no computador, abra `index.html?key=canvas`.
 - Para trocar uma imagem, mantenha o mesmo nome e formato (.webp); para recomprimir o vídeo use `ffmpeg ... -g 1` (todos os quadros-chave).
